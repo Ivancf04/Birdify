@@ -1,3 +1,4 @@
+// components/styles/SightingCard.style.ts
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
@@ -11,6 +12,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 3,
+    width: "100%",
   },
   image: {
     width: "100%",
@@ -18,14 +20,22 @@ export const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   content: {
+    width: "100%",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+
+  /* --- cabecera donde va el botón --- */
   headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
+  flexDirection: "row",
+  width: "100%",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  marginBottom: 8,
+  paddingRight: 0,                 
+  },
+  container: {
+    width: "80%",
   },
   species: {
     fontSize: 16,
@@ -42,13 +52,17 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: "#059669",
   },
+
+  /* --- botón de eliminar --- */
   deleteButton: {
-    padding: 6,
     borderRadius: 12,
+    backgroundColor: "transparent",
   },
   deleteButtonPressed: {
     backgroundColor: "#fee2e2",
   },
+
+  /* --- meta --- */
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -64,6 +78,7 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: "#047857",
   },
+
   notesSection: {
     marginTop: 10,
     paddingTop: 10,
@@ -74,6 +89,7 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     color: "#065f46",
   },
+
   footerRow: {
     marginTop: 10,
     borderTopWidth: 1,

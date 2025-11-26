@@ -45,7 +45,7 @@ export default function SightingCard({
       <View style={styles.content}>
         {/* cabecera */}
         <View style={styles.headerRow}>
-          <View>
+          <View style={styles.container}>
             <Text style={styles.species}>
               {sighting.species || "Unknown Species"}
             </Text>

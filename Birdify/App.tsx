@@ -33,7 +33,7 @@ export default function App() {
       <StatusBar barStyle="light-content" />
       <Header />
 
-      <MainContainer />
+      <MainContainer currentScreen={currentScreen} />
 
       <NavigationButton
         currentScreen={currentScreen}
