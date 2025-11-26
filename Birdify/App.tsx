@@ -1,13 +1,15 @@
 import React from "react";
 import { View, StyleSheet, StatusBar } from "react-native";
 import { Header } from "./components/Header";
+import { MainContainer } from "./components/MainContainer";
 
 export default function App() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <Header />
-      {/* Aquí luego irá el Main y la navegación */}
+      <MainContainer />
+      {/* Aquí luego va el botón / barra de navegación */}
     </View>
   );
 }
