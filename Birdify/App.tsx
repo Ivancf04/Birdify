@@ -2,6 +2,7 @@ import React from "react";
 import { View, StyleSheet, StatusBar } from "react-native";
 import { Header } from "./components/Header";
 import { MainContainer } from "./components/MainContainer";
+import { NavigationButton } from "./components/NavigationButton";
 
 export default function App() {
   return (
@@ -9,7 +10,7 @@ export default function App() {
       <StatusBar barStyle="light-content" />
       <Header />
       <MainContainer />
-      {/* Aquí luego va el botón / barra de navegación */}
+      <NavigationButton />
     </View>
   );
 }
