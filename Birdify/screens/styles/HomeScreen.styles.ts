@@ -3,19 +3,15 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: "#eefbfa"
   },
   mainCard: {
     flex: 1,
-    backgroundColor: "#ecfdf5", // verde muy claro
+    backgroundColor: "#eefbfa",
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 12,
-    // sombra ligera para destacar sobre el fondo
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
     elevation: 3,
   },
   headerRow: {
