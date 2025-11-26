@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Pressable } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import { styles } from "./styles/NavigationButton.styles";
 
 export const NavigationButton = () => {
@@ -11,7 +11,9 @@ export const NavigationButton = () => {
           pressed && styles.buttonPressed,
         ]}
       >
-        {/* icono o texto pendiente */}
+        <Text>Home</Text>
+        <Text>Add report</Text>
+        <Text>Dictionary</Text>
       </Pressable>
     </View>
   );
