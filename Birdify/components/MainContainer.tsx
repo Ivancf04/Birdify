@@ -1,19 +1,11 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
+import { styles } from "./styles/MainContainer.styles";
 
-export const MainContainer: React.FC = () => {
+export const MainContainer = () => {
   return (
     <View style={styles.main}>
-      {/* TODO: aquí van las pantallas (Home, AddReport, Dictionary, etc.) */}
+      {/* aquí van las pantallas */}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  main: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "#020617",
-  },
-});
