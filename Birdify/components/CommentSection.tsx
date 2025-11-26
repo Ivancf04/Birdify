@@ -80,7 +80,7 @@ export default function CommentSection({
           value={author}
           onChangeText={setAuthor}
           placeholder="Your name"
-          placeholderTextColor="#6ee7b7"
+          placeholderTextColor="#51aa87ff"
           style={styles.input}
         />
         <View style={styles.commentRow}>
@@ -88,7 +88,7 @@ export default function CommentSection({
             value={text}
             onChangeText={setText}
             placeholder="Add a comment or suggest species..."
-            placeholderTextColor="#6ee7b7"
+            placeholderTextColor="#51aa87ff"
             style={[styles.input, styles.commentInput]}
           />
           <Pressable
