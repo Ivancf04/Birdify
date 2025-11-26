@@ -1,4 +1,3 @@
-// screens/DictionaryScreen.tsx
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -7,56 +6,67 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
+  Linking,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { styles } from "./styles/DictionaryScreen.styles";
 
-const API_URL =
-  "https://nuthatch.lastelm.software/v2/birds?hasImg=true&page=1&pageSize=20";
-// pon aquí tu API key real
-const API_KEY = "93341d4d-2989-4b76-a42a-9eb125a47f52";
-
 interface ApiBird {
-  id: number | string;
-  name: string;
+  id: number;
+  commonName: string;
   sciName: string;
-  images: string[];
+  imageUrl?: string;
 
-  description?: string;
-  identification?: string;
-  habitat?: string;
-  diet?: string;
-  size?: string;
-  behavior?: string;
+  wikipediaUrl?: string;
+  observationsCount?: number;
+  establishmentMeans?: string; // native / introduced
+  establishmentPlace?: string; // Mexico
+  rank?: string; // species
+  iconicTaxonName?: string; // Aves
 }
+
+const API_URL =
+  "https://api.inaturalist.org/v1/taxa?q=bird&taxon_id=3&place_id=6793&rank=species&per_page=40";
 
 export default function DictionaryScreen() {
   const [birds, setBirds] = useState<ApiBird[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const fetchBirds = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(API_URL, {
-        headers: {
-          "api-key": API_KEY,
-        },
-      });
-
+      const res = await fetch(API_URL);
       if (!res.ok) {
         throw new Error(`Request failed: ${res.status}`);
       }
 
       const json = await res.json();
-      const entities = json.entities || json;
-      setBirds(entities);
+      const results = json.results ?? [];
+
+      const parsed: ApiBird[] = results.map((t: any) => ({
+        id: t.id,
+        commonName: t.preferred_common_name || t.name || "Unknown",
+        sciName: t.name || "",
+        imageUrl: t.default_photo?.medium_url || t.default_photo?.square_url,
+
+        wikipediaUrl: t.wikipedia_url || undefined,
+        observationsCount: t.observations_count,
+        establishmentMeans:
+          t.preferred_establishment_means ||
+          t.establishment_means?.establishment_means,
+        establishmentPlace: t.establishment_means?.place?.name,
+        rank: t.rank,
+        iconicTaxonName: t.iconic_taxon_name,
+      }));
+
+      setBirds(parsed);
     } catch (err: any) {
-      console.log("Error fetching birds", err);
-      setError("Could not load bird data.");
+      console.log("Error fetching birds from iNaturalist", err);
+      setError("Could not load bird data from iNaturalist.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +76,7 @@ export default function DictionaryScreen() {
     fetchBirds();
   }, []);
 
-  const toggleExpanded = (id: string | number) => {
+  const toggleExpanded = (id: number) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
@@ -81,28 +91,27 @@ export default function DictionaryScreen() {
   };
 
   const renderItem = ({ item }: { item: ApiBird }) => {
-    const img = item.images && item.images.length > 0 ? item.images[0] : null;
     const isExpanded = expandedId === item.id;
 
     return (
       <View style={[styles.card, isExpanded && styles.cardExpanded]}>
+        {/* Header compacto */}
         <View style={styles.cardHeaderRow}>
-          {/* Imagen */}
-          {img ? (
-            <Image source={{ uri: img }} style={styles.cardImage} />
+          {item.imageUrl ? (
+            <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
           ) : (
             <View style={styles.cardImageFallback}>
               <Feather name="image" size={20} color="#9ca3af" />
             </View>
           )}
 
-          {/* Texto */}
           <View style={styles.cardTextContainer}>
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <Text style={styles.cardSubtitle}>{item.sciName}</Text>
+            <Text style={styles.cardTitle}>{item.commonName}</Text>
+            {!!item.sciName && (
+              <Text style={styles.cardSubtitle}>{item.sciName}</Text>
+            )}
           </View>
 
-          {/* Chevron que abre/cierra detalle */}
           <Pressable
             style={styles.cardIconContainer}
             onPress={() => toggleExpanded(item.id)}
@@ -115,15 +124,67 @@ export default function DictionaryScreen() {
           </Pressable>
         </View>
 
-        {/* Detalle expandido dentro del mismo contenedor */}
+        {/* Contenido expandido dentro del mismo contenedor */}
         {isExpanded && (
           <View style={styles.expandedContent}>
-            {renderSection("Description", item.description)}
-            {renderSection("Identification", item.identification)}
-            {renderSection("Habitat", item.habitat)}
-            {renderSection("Diet", item.diet)}
-            {renderSection("Size", item.size)}
-            {renderSection("Behavior", item.behavior)}
+            {/* Status en México */}
+            {(item.establishmentMeans || item.establishmentPlace) && (
+              <View style={styles.detailSection}>
+                <Text style={styles.detailSectionTitle}>Status in Mexico</Text>
+                <Text style={styles.detailSectionText}>
+                  {item.establishmentMeans
+                    ? item.establishmentMeans.charAt(0).toUpperCase() +
+                      item.establishmentMeans.slice(1)
+                    : "Unknown"}
+                  {item.establishmentPlace
+                    ? ` in ${item.establishmentPlace}`
+                    : ""}
+                </Text>
+              </View>
+            )}
+
+            {/* Taxonomía básica */}
+            {(item.rank || item.iconicTaxonName) && (
+              <View style={styles.detailSection}>
+                <Text style={styles.detailSectionTitle}>Taxonomy</Text>
+                <Text style={styles.detailSectionText}>
+                  {item.rank
+                    ? item.rank.charAt(0).toUpperCase() + item.rank.slice(1)
+                    : ""}
+                  {item.iconicTaxonName
+                    ? ` · ${item.iconicTaxonName}`
+                    : ""}
+                </Text>
+              </View>
+            )}
+
+            {/* Observaciones */}
+            {typeof item.observationsCount === "number" && (
+              <View style={styles.detailSection}>
+                <Text style={styles.detailSectionTitle}>Observations</Text>
+                <Text style={styles.detailSectionText}>
+                  {item.observationsCount.toLocaleString()} observations on
+                  iNaturalist
+                </Text>
+              </View>
+            )}
+
+            {/* Link a Wikipedia */}
+            {item.wikipediaUrl && (
+              <Pressable
+                style={styles.detailLinkRow}
+                onPress={() => Linking.openURL(item.wikipediaUrl!)}
+              >
+                <Feather
+                  name="external-link"
+                  size={14}
+                  color="#059669"
+                />
+                <Text style={styles.detailLinkText}>
+                  Open Wikipedia article
+                </Text>
+              </Pressable>
+            )}
           </View>
         )}
       </View>
@@ -134,7 +195,9 @@ export default function DictionaryScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#059669" />
-        <Text style={styles.loadingText}>Loading birds...</Text>
+        <Text style={styles.loadingText}>
+          Loading birds from iNaturalist...
+        </Text>
       </View>
     );
   }
@@ -154,7 +217,7 @@ export default function DictionaryScreen() {
     <View style={styles.screen}>
       <FlatList
         data={birds}
-        keyExtractor={(item) => String(item.id)}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
       />

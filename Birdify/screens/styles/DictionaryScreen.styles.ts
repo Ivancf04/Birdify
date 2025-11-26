@@ -1,4 +1,3 @@
-// screens/styles/DictionaryScreen.styles.ts
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
@@ -8,16 +7,22 @@ export const styles = StyleSheet.create({
   },
 
   listContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingBottom: 24,
   },
 
-  /* --- card / item --- */
+  // CARD LISTA
   card: {
     backgroundColor: "#ffffff",
     borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 10,
-
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
   cardExpanded: {
@@ -64,7 +69,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 
-  /* --- contenido expandido --- */
+  // CONTENIDO EXPANDIDO
   expandedContent: {
     marginTop: 10,
     borderTopWidth: 1,
@@ -84,8 +89,20 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     color: "#064e3b",
   },
+  detailLinkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  detailLinkText: {
+    marginLeft: 4,
+    fontSize: 13,
+    color: "#059669",
+    fontWeight: "500",
+    textDecorationLine: "underline",
+  },
 
-  /* --- loading / error --- */
+  // LOADING / ERROR
   loadingContainer: {
     flex: 1,
     backgroundColor: "#e0f2f1",
