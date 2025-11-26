@@ -97,13 +97,15 @@ export const styles = StyleSheet.create({
     borderColor: "#6ee7b7",
     backgroundColor: "#ecfdf5",
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: 0,
     minHeight: 120,
   },
   notesInput: {
     flex: 1,
     fontSize: 13,
+    margin: 0,
     color: "#022c22",
+    textAlignVertical: "top", 
   },
 
   // SUBMIT
