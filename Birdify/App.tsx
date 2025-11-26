@@ -3,6 +3,7 @@ import { View, StyleSheet, StatusBar, Alert } from "react-native";
 import { Header } from "./components/Header";
 import { MainContainer } from "./components/MainContainer";
 import { NavigationButton } from "./components/NavigationButton";
+import { supabase } from "./lib/supabase"; 
 
 export interface BirdSighting {
   id: string;
@@ -14,6 +15,7 @@ export interface BirdSighting {
   notes: string;
   image?: string;
   comments?: Comment[];
+  image_path?: string;
 }
 
 export interface Comment {
@@ -25,25 +27,49 @@ export interface Comment {
 
 export type Screen = "home" | "add" | "dictionary";
 
-//  IP LOCAL
-const API_URL = "http://192.168.1.64/birdify/api.php";
+// La URL base del proyecto Supabase (para armar links de fotos)
+const PROJECT_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("home");
-
-  // 1. INICIALIZAR VACÍO: Ya no usamos datos falsos, esperamos a la BD.
   const [sightings, setSightings] = useState<BirdSighting[]>([]);
 
-  // 2. CARGAR DATOS DE LA BD (XAMPP)
+  // 1. leer supabase
   const fetchSightings = async () => {
     try {
-      const response = await fetch(`${API_URL}?action=get_sightings`);
-      const data = await response.json();
-      setSightings(data);
+      // solicitud
+      const { data: sightingsData, error } = await supabase
+        .from("sightings")
+        .select("*, comments(*)") 
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      // transformar datos
+      const mappedData = sightingsData.map((s: any) => ({
+        id: s.id.toString(),
+        species: s.species,
+        location: s.location,
+        date: s.sighting_date,
+        time: s.sighting_time,
+        count: s.count,
+        notes: s.notes,
+        // url publica de photos
+        image: s.image_path 
+          ? `${PROJECT_URL}/storage/v1/object/public/photos/${s.image_path}`
+          : undefined,
+        image_path: s.image_path,
+        comments: s.comments.map((c: any) => ({
+          id: c.id.toString(),
+          author: c.author,
+          text: c.text,
+          timestamp: c.created_at,
+        })),
+      }));
+
+      setSightings(mappedData);
     } catch (error) {
-      console.log("Error fetching data:", error);
-      // si falla
-      // Alert.alert("Error", "No se pudo conectar con el servidor");
+      console.log("Error fetching:", error);
     }
   };
 
@@ -51,19 +77,16 @@ export default function App() {
     fetchSightings();
   }, []);
 
-  // 4. AL AGREGAR UN REPORTE
-  const handleAddSighting = (
-    sighting: Omit<BirdSighting, "id" | "comments">
-  ) => {
+  const handleAddSighting = () => {
     fetchSightings(); 
     setCurrentScreen("home");
   };
 
-// 5. BORRAR AVISTAMIENTO (Conectado a la BD)
+  // 2. borrar en supabase
   const handleDeleteSighting = (id: string) => {
     Alert.alert(
       "Confirmar",
-      "¿Estás seguro de borrar este avistamiento? Se perderá la foto y los comentarios.",
+      "¿Estás seguro? Se borrará permanentemente.",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -71,26 +94,19 @@ export default function App() {
           style: "destructive",
           onPress: async () => {
             try {
-              // Enviamos la petición de borrado
-              const formData = new FormData();
-              formData.append('id', id);
-
-              const response = await fetch(`${API_URL}?action=delete_sighting`, {
-                method: 'POST',
-                body: formData,
-              });
-
-              const result = await response.json();
-
-              if (result.success) {
-                // Si se borró bien, recargamos la lista
-                fetchSightings();
-              } else {
-                Alert.alert("Error", result.error || "No se pudo borrar.");
+              const sightingToDelete = sightings.find(s => s.id === id);
+              // borrar photo si existe con el id
+              if (sightingToDelete?.image_path) {
+                await supabase.storage
+                  .from("photos")
+                  .remove([sightingToDelete.image_path]);
               }
-            } catch (error) {
-              console.log("Error deleting:", error);
-              Alert.alert("Error", "Fallo de conexión al borrar.");
+              // borar registro de la BD
+              const { error } = await supabase.from("sightings").delete().eq("id", id);
+              if (error) throw error;
+              fetchSightings();
+            } catch (error: any) {
+              Alert.alert("Error", error.message);
             }
           },
         },
@@ -98,42 +114,24 @@ export default function App() {
     );
   };
 
-// 6. AGREGAR COMENTARIO (Versión corregida con FormData)
+  // 3. comentar en supabase
   const handleAddComment = async (
     sightingId: string,
     comment: Omit<Comment, "id" | "timestamp">
   ) => {
     try {
-      const formData = new FormData();
-      formData.append('sightingId', sightingId);
-      formData.append('author', comment.author);
-      formData.append('text', comment.text);
+      const { error } = await supabase
+        .from("comments")
+        .insert({
+          sighting_id: sightingId,
+          author: comment.author,
+          text: comment.text,
+        });
 
-      const response = await fetch(`${API_URL}?action=add_comment`, {
-        method: 'POST',
-        body: formData,
-        // NO pongas headers manuales aquí
-      });
-
-      // TRUCO DE DEBUG: Primero obtenemos texto para ver si hay errores PHP ocultos
-      const textResult = await response.text();
-      console.log("Respuesta servidor:", textResult); // Míralo en tu terminal
-
-      try {
-          const result = JSON.parse(textResult);
-          if (result.success) {
-            fetchSightings();
-          } else {
-            Alert.alert("Error del Servidor", result.error);
-          }
-      } catch (e) {
-          // Si entra aquí, es que PHP devolvió un error de texto (HTML o Warning)
-          Alert.alert("Error PHP", "El servidor devolvió algo inválido: " + textResult);
-      }
-
-    } catch (error) {
-      console.log("Error adding comment:", error);
-      Alert.alert("Error", "Fallo de red al comentar.");
+      if (error) throw error;
+      fetchSightings(); 
+    } catch (error: any) {
+      Alert.alert("Error", "No se pudo guardar el comentario.");
     }
   };
 
@@ -141,7 +139,6 @@ export default function App() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <Header />
-
       <MainContainer
         currentScreen={currentScreen}
         onAddSighting={handleAddSighting}
@@ -149,7 +146,6 @@ export default function App() {
         onDelete={handleDeleteSighting}
         onAddComment={handleAddComment}
       />
-
       <NavigationButton
         currentScreen={currentScreen}
         onChangeScreen={setCurrentScreen}
