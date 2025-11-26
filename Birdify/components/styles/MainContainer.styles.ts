@@ -7,5 +7,6 @@ export const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
     backgroundColor: "#eefbfa",
+    marginBottom: 72,
   },
 });

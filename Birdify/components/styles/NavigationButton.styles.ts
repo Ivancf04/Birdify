@@ -1,29 +1,38 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  wrapper: {
+  container: {
     position: "absolute",
-    bottom: 24,
     left: 0,
     right: 0,
-    alignItems: "center",
-  },
-  button: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: "#22c55e",
-    justifyContent: "center",
+    bottom: 0,
+    height: 72,
+    backgroundColor: "#ffffff",
+    flexDirection: "row",
+    justifyContent: "space-around",
     alignItems: "center",
 
-    elevation: 6,
+    borderTopWidth: 1,
+    borderTopColor: "#e5e7eb",
+
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.08,
     shadowRadius: 6,
+    elevation: 8,
   },
-  buttonPressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.96 }],
+  tab: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  label: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "#4b5563", 
+  },
+  labelActive: {
+    color: "#059669", 
+    fontWeight: "600",
   },
 });

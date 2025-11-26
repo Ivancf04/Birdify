@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, StatusBar } from "react-native";
 import { Header } from "./components/Header";
 import { MainContainer } from "./components/MainContainer";
@@ -23,13 +23,22 @@ export interface Comment {
   timestamp: string;
 }
 
+export type Screen = "home" | "add" | "dictionary";
+
 export default function App() {
+  const [currentScreen, setCurrentScreen] = useState<Screen>("home");
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <Header />
+
       <MainContainer />
-      <NavigationButton />
+
+      <NavigationButton
+        currentScreen={currentScreen}
+        onChangeScreen={setCurrentScreen}
+      />
     </View>
   );
 }
