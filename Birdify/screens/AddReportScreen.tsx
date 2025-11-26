@@ -125,38 +125,78 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
   };
 
   // ─── SUBMIT ─────────────────────────────────────────────────────────
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // 1. Validaciones
     if (!locationText.trim()) {
-      Alert.alert("Missing location", "Location is required.");
+      Alert.alert("Falta ubicación", "Por favor indica dónde viste el ave.");
       return;
     }
-
     if (!imageUri) {
-      Alert.alert("Missing photo", "Please take a bird photo.");
+      Alert.alert("Falta foto", "Es necesario tomar una foto.");
       return;
     }
 
-    const numCount = Number(count) || 1;
+    // 2. Preparar los datos (FormData es obligatorio para enviar archivos)
+    const formData = new FormData();
+    formData.append('species', species.trim() || "Unknown");
+    formData.append('location', locationText.trim());
+    formData.append('count', count);
+    formData.append('notes', notes.trim());
+    
+    // Fechas automáticas
     const now = new Date();
-    const date = now.toISOString().slice(0, 10); 
-    const time = now.toTimeString().slice(0, 5); 
+    formData.append('date', now.toISOString().slice(0, 10));
+    formData.append('time', now.toTimeString().slice(0, 5));
 
-    onSubmit({
-      species: species.trim() || "Unknown",
-      location: locationText.trim(),
-      date,
-      time,
-      count: numCount,
-      notes: notes.trim(),
-      image: imageUri,
-    });
+    // 3. Preparar la imagen para subir
+    const filename = imageUri.split('/').pop();
+    const match = /\.(\w+)$/.exec(filename || "");
+    const type = match ? `image/${match[1]}` : `image/jpeg`;
 
-    // limpiar
-    setSpecies("");
-    setNotes("");
-    setCount("1");
-    setLocationText("");
-    setImageUri(undefined);
+    // @ts-ignore: TypeScript a veces se queja del formato de archivo en React Native, lo ignoramos.
+    formData.append('photo', {
+      uri: imageUri,
+      name: filename || 'photo.jpg',
+      type,
+    } as any);
+
+    try {
+      // 4. ENVIAR A TU SERVIDOR XAMPP
+      // Nota: headers se deja vacío o sin Content-Type manual para que fetch lo calcule solo.
+      const response = await fetch('http://192.168.1.64/birdify/api.php?action=add_sighting', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        Alert.alert("¡Éxito!", "Avistamiento guardado en la base de datos.");
+        
+        // Llamamos a onSubmit para avisar a App.tsx que refresque la lista
+        onSubmit({
+          species: species.trim() || "Unknown",
+          location: locationText.trim(),
+          date: now.toISOString().slice(0, 10),
+          time: now.toTimeString().slice(0, 5),
+          count: Number(count) || 1,
+          notes: notes.trim(),
+          image: imageUri,
+        });
+
+        // Limpiar el formulario
+        setSpecies("");
+        setNotes("");
+        setCount("1");
+        setLocationText("");
+        setImageUri(undefined);
+      } else {
+        Alert.alert("Error del Servidor", result.error || "No se pudo guardar.");
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error de Conexión", "No se pudo conectar con 192.168.1.64. Verifica que tu PC y Celular estén en el mismo Wifi.");
+    }
   };
 
   return (
