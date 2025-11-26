@@ -2,24 +2,44 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
-    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#d1fae5",
+    paddingTop: 8,
   },
-  listContainer: {
+  summaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  summaryText: {
+    marginLeft: 6,
+    fontSize: 12,
+    color: "#065f46",
+    fontWeight: "500",
+  },
+  listWrapper: {
     marginBottom: 8,
   },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#047857",
-    marginBottom: 4,
+  commentCard: {
+    backgroundColor: "#ecfdf5",
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 6,
   },
-  commentItem: {
-    paddingVertical: 4,
+  commentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 2,
   },
   commentAuthor: {
     fontSize: 12,
-    fontWeight: "600",
-    color: "#047857",
+    fontWeight: "700",
+    color: "#065f46",
+  },
+  commentTime: {
+    fontSize: 11,
+    color: "#16a34a",
   },
   commentText: {
     fontSize: 12,
@@ -29,16 +49,31 @@ export const styles = StyleSheet.create({
     marginTop: 4,
     gap: 6,
   },
-  row: {
+  input: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#6ee7b7",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 12,
+    color: "#022c22",
+    backgroundColor: "#ecfdf5",
+  },
+  commentRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    marginTop: 4,
   },
-  input: {
-    // se mezcla con estilos base del input
+  commentInput: {
+    flex: 1,
+    marginRight: 8,
   },
   sendButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#22c55e",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

@@ -80,13 +80,23 @@ export const styles = StyleSheet.create({
     borderTopColor: "#d1fae5",
     paddingTop: 8,
   },
-  commentRow: {
+  commentButton: {
     flexDirection: "row",
     alignItems: "center",
+    alignSelf: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#059669",
   },
-  commentText: {
+  commentButtonText: {
     marginLeft: 6,
     fontSize: 12,
-    color: "#047857",
+    color: "#059669",
+    fontWeight: "500",
+  },
+  commentsWrapper: {
+    marginTop: 10,
   },
 });

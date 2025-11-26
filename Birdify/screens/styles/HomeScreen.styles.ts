@@ -3,16 +3,11 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#eefbfa"
+    backgroundColor: "#eefafd"
   },
   mainCard: {
     flex: 1,
-    backgroundColor: "#eefbfa",
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-    elevation: 3,
+    backgroundColor: "#eefafd",
   },
   headerRow: {
     flexDirection: "row",
@@ -23,7 +18,7 @@ export const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#052e16", // verde oscuro
+    color: "#052e16",
   },
   badge: {
     paddingHorizontal: 10,

@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { styles } from "./styles/SightingCard.style";
 import type { BirdSighting, Comment } from "../App";
 import { ImageWithFallback } from "../components/ImageWithFallback";
+import CommentSection from "../components/CommentSection";
 
 interface SightingCardProps {
   sighting: BirdSighting;
@@ -29,10 +30,10 @@ export default function SightingCard({
   onAddComment,
 }: SightingCardProps) {
   const commentCount = sighting.comments?.length ?? 0;
+  const [showComments, setShowComments] = useState(false);
 
   return (
     <View style={styles.card}>
-      {/* Imagen superior */}
       {sighting.image && (
         <ImageWithFallback
           src={sighting.image}
@@ -41,9 +42,8 @@ export default function SightingCard({
         />
       )}
 
-      {/* Contenido */}
       <View style={styles.content}>
-        {/* Título + eliminar */}
+        {/* cabecera */}
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.species}>
@@ -66,7 +66,7 @@ export default function SightingCard({
           </Pressable>
         </View>
 
-        {/* Fecha / hora / cantidad */}
+        {/* meta */}
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
             <Feather name="calendar" size={14} color="#047857" />
@@ -87,26 +87,40 @@ export default function SightingCard({
           </View>
         </View>
 
-        {/* Notas */}
+        {/* notas */}
         {sighting.notes ? (
           <View style={styles.notesSection}>
             <Text style={styles.notesText}>{sighting.notes}</Text>
           </View>
         ) : null}
 
-        {/* Línea inferior con comentarios */}
+        {/* botón de comentarios */}
         <View style={styles.footerRow}>
-          <View style={styles.commentRow}>
-            <Feather name="message-circle" size={14} color="#047857" />
-            <Text style={styles.commentText}>
+          <Pressable
+            onPress={() => setShowComments((prev) => !prev)}
+            style={styles.commentButton}
+          >
+            <Feather name="message-circle" size={14} color="#059669" />
+            <Text style={styles.commentButtonText}>
               {commentCount === 0
-                ? "No comments yet"
+                ? "Add comment"
                 : `${commentCount} ${
                     commentCount === 1 ? "Comment" : "Comments"
                   }`}
             </Text>
-          </View>
+          </Pressable>
         </View>
+
+        {/* sección de comentarios */}
+        {showComments && (
+          <View style={styles.commentsWrapper}>
+            <CommentSection
+              sightingId={sighting.id}
+              comments={sighting.comments || []}
+              onAddComment={onAddComment}
+            />
+          </View>
+        )}
       </View>
     </View>
   );
