@@ -2,11 +2,15 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   header: {
-    height: 64,
-    paddingHorizontal: 16,
+    height: 72,
+    backgroundColor: "#059669",
     justifyContent: "center",
-    backgroundColor: "#0f172a",
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(148, 163, 184, 0.25)",
+    alignItems: "center",
+  },
+  title: {
+    color: "#ffffff",
+    paddingTop: 24,
+    fontSize: 20,
+    fontWeight: "700",
   },
 });

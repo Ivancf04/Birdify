@@ -2,10 +2,8 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { styles } from "./styles/SightingCard.style";
-import { ImageWithFallback } from "../components/ImageWithFallback";
-import CommentSection from "../components/CommentSection";
 import type { BirdSighting, Comment } from "../App";
-import { Card } from "../components/ui/Card";
+import { ImageWithFallback } from "../components/ImageWithFallback";
 
 interface SightingCardProps {
   sighting: BirdSighting;
@@ -30,8 +28,11 @@ export default function SightingCard({
   onDelete,
   onAddComment,
 }: SightingCardProps) {
+  const commentCount = sighting.comments?.length ?? 0;
+
   return (
-    <Card style={styles.card}>
+    <View style={styles.card}>
+      {/* Imagen superior */}
       {sighting.image && (
         <ImageWithFallback
           src={sighting.image}
@@ -40,8 +41,9 @@ export default function SightingCard({
         />
       )}
 
+      {/* Contenido */}
       <View style={styles.content}>
-        {/* header */}
+        {/* Título + eliminar */}
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.species}>
@@ -64,17 +66,20 @@ export default function SightingCard({
           </Pressable>
         </View>
 
-        {/* meta info */}
-        <View style={styles.metaGrid}>
-          <View style={styles.metaRow}>
+        {/* Fecha / hora / cantidad */}
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
             <Feather name="calendar" size={14} color="#047857" />
             <Text style={styles.metaText}>{formatDate(sighting.date)}</Text>
           </View>
-          <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
             <Feather name="clock" size={14} color="#047857" />
             <Text style={styles.metaText}>{sighting.time}</Text>
           </View>
-          <View style={styles.metaRow}>
+        </View>
+
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
             <Feather name="hash" size={14} color="#047857" />
             <Text style={styles.metaText}>
               {sighting.count} {sighting.count === 1 ? "bird" : "birds"}
@@ -82,20 +87,27 @@ export default function SightingCard({
           </View>
         </View>
 
-        {/* notas */}
+        {/* Notas */}
         {sighting.notes ? (
           <View style={styles.notesSection}>
             <Text style={styles.notesText}>{sighting.notes}</Text>
           </View>
         ) : null}
 
-        {/* comentarios */}
-        <CommentSection
-          sightingId={sighting.id}
-          comments={sighting.comments || []}
-          onAddComment={onAddComment}
-        />
+        {/* Línea inferior con comentarios */}
+        <View style={styles.footerRow}>
+          <View style={styles.commentRow}>
+            <Feather name="message-circle" size={14} color="#047857" />
+            <Text style={styles.commentText}>
+              {commentCount === 0
+                ? "No comments yet"
+                : `${commentCount} ${
+                    commentCount === 1 ? "Comment" : "Comments"
+                  }`}
+            </Text>
+          </View>
+        </View>
       </View>
-    </Card>
+    </View>
   );
 }

@@ -2,15 +2,24 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   card: {
-    marginBottom: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    overflow: "hidden",
+    marginTop: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   image: {
     width: "100%",
-    height: undefined,
-    aspectRatio: 16 / 9,
+    height: 190,
+    resizeMode: "cover",
   },
   content: {
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   headerRow: {
     flexDirection: "row",
@@ -21,15 +30,15 @@ export const styles = StyleSheet.create({
   species: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#064e3b",
+    color: "#065f46",
   },
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
     marginTop: 4,
   },
   locationText: {
+    marginLeft: 4,
     fontSize: 12,
     color: "#059669",
   },
@@ -40,30 +49,44 @@ export const styles = StyleSheet.create({
   deleteButtonPressed: {
     backgroundColor: "#fee2e2",
   },
-  metaGrid: {
-    marginTop: 8,
-    marginBottom: 8,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    marginTop: 6,
+  },
+  metaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
   },
   metaText: {
+    marginLeft: 4,
     fontSize: 12,
     color: "#047857",
   },
   notesSection: {
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: 10,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: "#d1fae5",
   },
   notesText: {
     fontSize: 13,
     color: "#065f46",
+  },
+  footerRow: {
+    marginTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#d1fae5",
+    paddingTop: 8,
+  },
+  commentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  commentText: {
+    marginLeft: 6,
+    fontSize: 12,
+    color: "#047857",
   },
 });

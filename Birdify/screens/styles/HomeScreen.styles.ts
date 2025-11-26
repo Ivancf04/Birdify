@@ -1,24 +1,36 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
+  },
+  mainCard: {
+    flex: 1,
+    backgroundColor: "#ecfdf5", // verde muy claro
+    borderRadius: 24,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 16,
+    paddingBottom: 12,
+    // sombra ligera para destacar sobre el fondo
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   headerRow: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 16,
+    alignItems: "center",
+    marginBottom: 12,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#064e3b",
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#052e16", // verde oscuro
   },
   badge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
     backgroundColor: "#d1fae5",
@@ -29,6 +41,9 @@ export const styles = StyleSheet.create({
     color: "#047857",
   },
   emptyCard: {
+    marginTop: 16,
+    borderRadius: 18,
+    backgroundColor: "#ffffff",
     paddingVertical: 24,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -41,6 +56,5 @@ export const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 16,
-    gap: 12,
   },
 });
