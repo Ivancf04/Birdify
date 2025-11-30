@@ -16,6 +16,7 @@ import * as Device from "expo-device";
 import * as Location from "expo-location";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
+// Importamos la API legacy para evitar problemas con Expo 52+
 import * as FileSystem from "expo-file-system/legacy";
 import { decode } from "base64-arraybuffer";
 
@@ -99,7 +100,7 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
     }
   };
 
-  // ─── SUBMIT A SUPABASE ───────────────────────────────────────────────
+  // ─── SUBMIT CON USUARIO ──────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!locationText.trim()) {
       Alert.alert("Falta ubicación", "Indica dónde viste el ave.");
@@ -113,14 +114,23 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
     setLoading(true);
 
     try {
-      // 1. LEER COMO BASE64 USANDO LA API LEGACY
+      // 1. Obtener el usuario actual para vincular el reporte
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        Alert.alert("Error", "No estás autenticado.");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Leer imagen como Base64
       const base64 = await FileSystem.readAsStringAsync(imageUri, {
         encoding: "base64",
       });
 
       const fileName = `${Date.now()}.jpg`;
 
-      // 2. SUBIR
+      // 3. Subir foto al Storage
       const { error: uploadError } = await supabase.storage
         .from("photos")
         .upload(fileName, decode(base64), {
@@ -129,10 +139,11 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
 
       if (uploadError) throw uploadError;
 
-      // 3. GUARDAR DATOS
+      // 4. Guardar en Base de Datos (CON USER_ID)
       const { error: insertError } = await supabase
         .from("sightings")
         .insert({
+          user_id: user.id, // <--- ESTO ES LO QUE FALTABA
           species: species.trim() || "Unknown",
           location: locationText.trim(),
           count: Number(count) || 1,
@@ -144,14 +155,16 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
 
       if (insertError) throw insertError;
 
-      Alert.alert("¡Éxito!", "Reporte guardado en la nube ☁️");
+      Alert.alert("¡Éxito!", "Reporte publicado correctamente 🦅");
       
+      // Limpiar formulario
       setSpecies("");
       setNotes("");
       setCount("1");
       setLocationText("");
       setImageUri(undefined);
       
+      // Avisar a la App principal que recargue
       onSubmit({} as any); 
 
     } catch (error: any) {

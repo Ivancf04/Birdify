@@ -1,4 +1,3 @@
-// components/MainContainer.tsx
 import React, { useState } from "react";
 import { View } from "react-native";
 import { styles } from "./styles/MainContainer.styles";
@@ -16,6 +15,9 @@ interface MainContainerProps {
     sightingId: string,
     comment: Omit<Comment, "id" | "timestamp">
   ) => void;
+  // Added missing props to the interface
+  onDeleteComment: (commentId: string) => void;
+  currentUserId: string;
 }
 
 export const MainContainer: React.FC<MainContainerProps> = ({
@@ -24,6 +26,9 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   sightings,
   onDelete,
   onAddComment,
+  // Destructure the new props
+  onDeleteComment,
+  currentUserId,
 }) => {
   return (
     <View style={styles.main}>
@@ -32,6 +37,9 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           sightings={sightings}
           onDelete={onDelete}
           onAddComment={onAddComment}
+          // Pass the new props to HomeScreen
+          onDeleteComment={onDeleteComment}
+          currentUserId={currentUserId}
         />
       )}
 

@@ -12,11 +12,11 @@ import { Feather } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { TextInputField } from "../components/ui/TextInputField";
 import { PrimaryButton } from "../components/ui/PrimaryButton";
-import { styles } from "./styles/AuthScreen"; 
+import { styles } from "./styles/AuthScreen"; // Asegúrate de que este archivo de estilos exista
 
 export default function AuthScreen() {
-  // -- Estados --
-  const [identifier, setIdentifier] = useState(""); // Para Login (Usuario o Email)
+  // -- Estados para el formulario --
+  const [identifier, setIdentifier] = useState(""); // Para Login (puede ser Usuario o Email)
   
   const [email, setEmail] = useState("");           // Solo para Registro
   const [username, setUsername] = useState("");     // Solo para Registro
@@ -27,14 +27,15 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
 
-  // ─── 1. LOGIN INTELIGENTE (Usuario o Correo) ─────────────────────────────
+  // ─── 1. LÓGICA DE LOGIN INTELIGENTE ──────────────────────────────────────
   const signIn = async () => {
     setLoading(true);
     let loginEmail = identifier.trim();
 
-    // Si NO tiene @, es un nombre de usuario y buscamos email
+    // Si NO tiene arroba '@', asumimos que es un nombre de usuario
     if (!loginEmail.includes("@")) {
       try {
+        // Buscamos el email asociado a ese username en la tabla 'profiles'
         const { data, error } = await supabase
           .from("profiles")
           .select("email")
@@ -46,6 +47,7 @@ export default function AuthScreen() {
           setLoading(false);
           return;
         }
+        // Si lo encontramos, usamos ese email para autenticar
         loginEmail = data.email;
       } catch (err) {
         Alert.alert("Error", "Error buscando usuario");
@@ -54,7 +56,7 @@ export default function AuthScreen() {
       }
     }
 
-    // Iniciar sesión con el email 
+    // Iniciar sesión con el email (ya sea el escrito o el encontrado)
     const { error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password: password,
@@ -64,7 +66,7 @@ export default function AuthScreen() {
     setLoading(false);
   };
 
-  // ─── 2. REGISTRO COMPLETO ──────────────────────────────────────────────
+  // ─── 2. LÓGICA DE REGISTRO COMPLETO ──────────────────────────────────────
   const signUp = async () => {
     setLoading(true);
     
@@ -73,10 +75,11 @@ export default function AuthScreen() {
       password: password,
       options: {
         data: {
-          // Estos datos se envían al Trigger para crear el perfil
+          // Estos datos se envían al Trigger SQL para crear el perfil automáticamente
           username: username.trim(), 
           full_name: fullName.trim(),
           display_name: username.trim(), 
+          // IMPORTANTE: El trigger también debe estar configurado para guardar el email
         },
       },
     });
@@ -85,6 +88,7 @@ export default function AuthScreen() {
       Alert.alert("Error de Registro", error.message);
     } else {
       Alert.alert("¡Cuenta Creada!", `Bienvenido, @${username}.`);
+      // Si la confirmación de email está desactivada, entrará automáticamente.
     }
     setLoading(false);
   };
@@ -103,9 +107,9 @@ export default function AuthScreen() {
     }
   };
 
-  // Limpiar campos al cambiar de modo
   const toggleMode = () => {
     setIsLogin(!isLogin);
+    // Limpiar campos para evitar confusión
     setIdentifier("");
     setEmail("");
     setPassword("");
@@ -131,7 +135,7 @@ export default function AuthScreen() {
 
         <View style={styles.form}>
           
-          {/* VISTA DE LOGIN */}
+          {/* --- VISTA DE LOGIN --- */}
           {isLogin && (
             <TextInputField
               label="Usuario o Correo"
@@ -142,7 +146,7 @@ export default function AuthScreen() {
             />
           )}
 
-          {/* VISTA DE REGISTRO */}
+          {/* --- VISTA DE REGISTRO --- */}
           {!isLogin && (
             <>
               <TextInputField
@@ -170,7 +174,7 @@ export default function AuthScreen() {
             </>
           )}
 
-          {/* CONTRASEÑA */}
+          {/* CONTRASEÑA (Común para ambos) */}
           <TextInputField
             label="Contraseña"
             value={password}

@@ -11,12 +11,18 @@ interface HomeScreenProps {
     sightingId: string,
     comment: Omit<Comment, "id" | "timestamp">
   ) => void;
+  // NUEVAS PROPS
+  onDeleteComment: (commentId: string) => void;
+  currentUserId: string;
 }
 
 export default function HomeScreen({
   sightings,
   onDelete,
   onAddComment,
+  // RECIBIMOS
+  onDeleteComment,
+  currentUserId,
 }: HomeScreenProps) {
   return (
     <View style={styles.screen}>
@@ -31,7 +37,6 @@ export default function HomeScreen({
           </View>
         </View>
 
-        {/* Lista o estado vacío */}
         {sightings.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>
@@ -48,6 +53,9 @@ export default function HomeScreen({
                 sighting={item}
                 onDelete={onDelete}
                 onAddComment={onAddComment}
+                // PASAMOS A SIGHTINGCARD
+                onDeleteComment={onDeleteComment}
+                currentUserId={currentUserId}
               />
             )}
             contentContainerStyle={styles.listContent}
