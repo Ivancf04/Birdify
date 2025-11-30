@@ -5,7 +5,7 @@ import { MainContainer } from "./components/MainContainer";
 import { NavigationButton } from "./components/NavigationButton";
 import { supabase } from "./lib/supabase"; 
 import { Session } from "@supabase/supabase-js";
-import AuthScreen from "./screens/AuthScreen"; // <--- Importamos la nueva pantalla
+import AuthScreen from "./screens/AuthScreen"; 
 
 export interface BirdSighting {
   id: string;
@@ -32,33 +32,61 @@ export type Screen = "home" | "add" | "dictionary";
 const PROJECT_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 
 export default function App() {
-  const [session, setSession] = useState<Session | null>(null); // <--- Estado de Sesión
+  const [session, setSession] = useState<Session | null>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen>("home");
   const [sightings, setSightings] = useState<BirdSighting[]>([]);
+  
+  // Estado para guardar el nombre de usuario (leído de la tabla profiles)
+  const [userName, setUserName] = useState(""); 
 
-  // 1. CONTROL DE SESIÓN
+  // 1. GESTIÓN DE SESIÓN Y PERFIL
   useEffect(() => {
-    // Verificar sesión inicial
+    // A. Verificar sesión inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session?.user) {
+        fetchProfile(session.user.id); // <--- Cargar perfil de la BD
+      }
     });
 
-    // Escuchar cambios (login, logout)
+    // B. Escuchar cambios (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setUserName(""); // Limpiar si cierra sesión
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // 2. CARGAR DATOS (Solo si hay sesión)
+  // 2. NUEVA FUNCIÓN: Leer tabla 'profiles'
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles') 
+        .select('username, full_name')
+        .eq('id', userId)
+        .single();
+
+      if (data) {
+        setUserName(data.username || data.full_name || "Usuario");
+      }
+    } catch (e) {
+      console.log("Error cargando perfil:", e);
+    }
+  };
+
+  // 3. CARGAR AVISTAMIENTOS
   const fetchSightings = async () => {
-    if (!session) return; // No cargar si no hay usuario
+    if (!session) return; 
 
     try {
       const { data: sightingsData, error } = await supabase
         .from("sightings")
-        .select("*, comments(*)") 
+        .select("*, comments(*)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -85,31 +113,35 @@ export default function App() {
 
       setSightings(mappedData);
     } catch (error) {
-      console.log("Error fetching:", error);
+      console.log("Error fetching sightings:", error);
     }
   };
 
-  // Cargar datos cuando cambie la sesión
+  // Cargar datos si hay sesión
   useEffect(() => {
     if (session) fetchSightings();
   }, [session]);
 
+
+  // ─── HANDLERS ────────────────────────────────────────────────────────
   const handleAddSighting = () => {
-    fetchSightings(); 
+    fetchSightings();
     setCurrentScreen("home");
   };
 
   const handleDeleteSighting = (id: string) => {
-    Alert.alert("Confirmar", "¿Estás seguro?", [
+    Alert.alert("Confirmar", "¿Borrar avistamiento?", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Borrar",
         style: "destructive",
         onPress: async () => {
           try {
-            const sightingToDelete = sightings.find(s => s.id === id);
+            const sightingToDelete = sightings.find((s) => s.id === id);
             if (sightingToDelete?.image_path) {
-              await supabase.storage.from("photos").remove([sightingToDelete.image_path]);
+              await supabase.storage
+                .from("photos")
+                .remove([sightingToDelete.image_path]);
             }
             const { error } = await supabase.from("sightings").delete().eq("id", id);
             if (error) throw error;
@@ -122,38 +154,42 @@ export default function App() {
     ]);
   };
 
-  const handleAddComment = async (sightingId: string, comment: Omit<Comment, "id" | "timestamp">) => {
+  const handleAddComment = async (
+    sightingId: string,
+    comment: Omit<Comment, "id" | "timestamp">
+  ) => {
     try {
+      // Usamos el nombre REAL obtenido de la tabla profiles
+      const authorName = userName || comment.author || "Anonymous";
+      
       const { error } = await supabase.from("comments").insert({
         sighting_id: sightingId,
-        author: comment.author,
+        author: authorName, // Guardamos el nombre correcto en el comentario
         text: comment.text,
       });
+
       if (error) throw error;
-      fetchSightings(); 
+      fetchSightings();
     } catch (error: any) {
       Alert.alert("Error", "No se pudo guardar el comentario.");
     }
   };
 
-  // 3. CERRAR SESIÓN (Función extra para el Header o botón de salida)
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
 
-  // 4. RENDERIZADO CONDICIONAL
-  // Si NO hay sesión, mostramos la pantalla de Login
+  // ─── RENDER ──────────────────────────────────────────────────────────
   if (!session) {
     return <AuthScreen />;
   }
 
-  // Si SÍ hay sesión, mostramos la App normal
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      {/* Pasamos handleSignOut al Header si quieres poner un botón de salir ahí, 
-          o puedes poner un botón temporal en Home para probar */}
-      <Header /> 
+      
+      {/* Pasamos el nombre obtenido de la tabla 'profiles' al Header */}
+      <Header userName={userName} onSignOut={handleSignOut} />
 
       <MainContainer
         currentScreen={currentScreen}
