@@ -4,6 +4,8 @@ import { Header } from "./components/Header";
 import { MainContainer } from "./components/MainContainer";
 import { NavigationButton } from "./components/NavigationButton";
 import { supabase } from "./lib/supabase"; 
+import { Session } from "@supabase/supabase-js";
+import AuthScreen from "./screens/AuthScreen"; // <--- Importamos la nueva pantalla
 
 export interface BirdSighting {
   id: string;
@@ -27,17 +29,33 @@ export interface Comment {
 
 export type Screen = "home" | "add" | "dictionary";
 
-// La URL base del proyecto Supabase (para armar links de fotos)
 const PROJECT_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null); // <--- Estado de Sesión
   const [currentScreen, setCurrentScreen] = useState<Screen>("home");
   const [sightings, setSightings] = useState<BirdSighting[]>([]);
 
-  // 1. leer supabase
+  // 1. CONTROL DE SESIÓN
+  useEffect(() => {
+    // Verificar sesión inicial
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Escuchar cambios (login, logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // 2. CARGAR DATOS (Solo si hay sesión)
   const fetchSightings = async () => {
+    if (!session) return; // No cargar si no hay usuario
+
     try {
-      // solicitud
       const { data: sightingsData, error } = await supabase
         .from("sightings")
         .select("*, comments(*)") 
@@ -45,7 +63,6 @@ export default function App() {
 
       if (error) throw error;
 
-      // transformar datos
       const mappedData = sightingsData.map((s: any) => ({
         id: s.id.toString(),
         species: s.species,
@@ -54,7 +71,6 @@ export default function App() {
         time: s.sighting_time,
         count: s.count,
         notes: s.notes,
-        // url publica de photos
         image: s.image_path 
           ? `${PROJECT_URL}/storage/v1/object/public/photos/${s.image_path}`
           : undefined,
@@ -73,61 +89,46 @@ export default function App() {
     }
   };
 
+  // Cargar datos cuando cambie la sesión
   useEffect(() => {
-    fetchSightings();
-  }, []);
+    if (session) fetchSightings();
+  }, [session]);
 
   const handleAddSighting = () => {
     fetchSightings(); 
     setCurrentScreen("home");
   };
 
-  // 2. borrar en supabase
   const handleDeleteSighting = (id: string) => {
-    Alert.alert(
-      "Confirmar",
-      "¿Estás seguro? Se borrará permanentemente.",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Borrar",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const sightingToDelete = sightings.find(s => s.id === id);
-              // borrar photo si existe con el id
-              if (sightingToDelete?.image_path) {
-                await supabase.storage
-                  .from("photos")
-                  .remove([sightingToDelete.image_path]);
-              }
-              // borar registro de la BD
-              const { error } = await supabase.from("sightings").delete().eq("id", id);
-              if (error) throw error;
-              fetchSightings();
-            } catch (error: any) {
-              Alert.alert("Error", error.message);
+    Alert.alert("Confirmar", "¿Estás seguro?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Borrar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const sightingToDelete = sightings.find(s => s.id === id);
+            if (sightingToDelete?.image_path) {
+              await supabase.storage.from("photos").remove([sightingToDelete.image_path]);
             }
-          },
+            const { error } = await supabase.from("sightings").delete().eq("id", id);
+            if (error) throw error;
+            fetchSightings();
+          } catch (error: any) {
+            Alert.alert("Error", error.message);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
-  // 3. comentar en supabase
-  const handleAddComment = async (
-    sightingId: string,
-    comment: Omit<Comment, "id" | "timestamp">
-  ) => {
+  const handleAddComment = async (sightingId: string, comment: Omit<Comment, "id" | "timestamp">) => {
     try {
-      const { error } = await supabase
-        .from("comments")
-        .insert({
-          sighting_id: sightingId,
-          author: comment.author,
-          text: comment.text,
-        });
-
+      const { error } = await supabase.from("comments").insert({
+        sighting_id: sightingId,
+        author: comment.author,
+        text: comment.text,
+      });
       if (error) throw error;
       fetchSightings(); 
     } catch (error: any) {
@@ -135,10 +136,25 @@ export default function App() {
     }
   };
 
+  // 3. CERRAR SESIÓN (Función extra para el Header o botón de salida)
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // 4. RENDERIZADO CONDICIONAL
+  // Si NO hay sesión, mostramos la pantalla de Login
+  if (!session) {
+    return <AuthScreen />;
+  }
+
+  // Si SÍ hay sesión, mostramos la App normal
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <Header />
+      {/* Pasamos handleSignOut al Header si quieres poner un botón de salir ahí, 
+          o puedes poner un botón temporal en Home para probar */}
+      <Header /> 
+
       <MainContainer
         currentScreen={currentScreen}
         onAddSighting={handleAddSighting}
@@ -146,6 +162,7 @@ export default function App() {
         onDelete={handleDeleteSighting}
         onAddComment={handleAddComment}
       />
+
       <NavigationButton
         currentScreen={currentScreen}
         onChangeScreen={setCurrentScreen}
