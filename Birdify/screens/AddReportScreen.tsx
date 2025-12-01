@@ -16,7 +16,6 @@ import * as Device from "expo-device";
 import * as Location from "expo-location";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
-// Importamos la API legacy para evitar problemas con Expo 52+
 import * as FileSystem from "expo-file-system/legacy";
 import { decode } from "base64-arraybuffer";
 
@@ -198,8 +197,9 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
       </Modal>
 
       <KeyboardAvoidingView
-        style={styles.screen}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 100}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.card}>

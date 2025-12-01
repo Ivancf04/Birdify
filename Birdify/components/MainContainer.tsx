@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View } from "react-native";
 import { styles } from "./styles/MainContainer.styles";
 import HomeScreen from "../screens/HomeScreen";

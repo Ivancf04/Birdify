@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, KeyboardAvoidingView, Platform } from "react-native";
 import { styles } from "./styles/HomeScreen.styles";
 import type { BirdSighting, Comment } from "../App";
 import SightingCard from "./SightingCard";
@@ -20,12 +20,16 @@ export default function HomeScreen({
   sightings,
   onDelete,
   onAddComment,
-  // RECIBIMOS
   onDeleteComment,
   currentUserId,
 }: HomeScreenProps) {
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 100}
+    >
+      <View style={styles.screen}>
       <View style={styles.mainCard}>
         <View style={styles.headerRow}>
           <Text style={styles.title}>Recent Sightings</Text>
@@ -53,7 +57,6 @@ export default function HomeScreen({
                 sighting={item}
                 onDelete={onDelete}
                 onAddComment={onAddComment}
-                // PASAMOS A SIGHTINGCARD
                 onDeleteComment={onDeleteComment}
                 currentUserId={currentUserId}
               />
@@ -63,5 +66,7 @@ export default function HomeScreen({
         )}
       </View>
     </View>
+    </KeyboardAvoidingView>
+    
   );
 }
