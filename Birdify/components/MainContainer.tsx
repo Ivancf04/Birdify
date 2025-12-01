@@ -15,9 +15,9 @@ interface MainContainerProps {
     sightingId: string,
     comment: Omit<Comment, "id" | "timestamp">
   ) => void;
-  // Added missing props to the interface
   onDeleteComment: (commentId: string) => void;
   currentUserId: string;
+  onRefreshSightings: () => Promise<void> | void;
 }
 
 export const MainContainer: React.FC<MainContainerProps> = ({
@@ -29,6 +29,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   // Destructure the new props
   onDeleteComment,
   currentUserId,
+  onRefreshSightings,
 }) => {
   return (
     <View style={styles.main}>
@@ -40,6 +41,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           // Pass the new props to HomeScreen
           onDeleteComment={onDeleteComment}
           currentUserId={currentUserId}
+          onRefreshSightings={onRefreshSightings}
         />
       )}
 

@@ -220,6 +220,7 @@ export default function App() {
         onAddComment={handleAddComment}
         onDeleteComment={handleDeleteComment}
         currentUserId={session.user.id}
+        onRefreshSightings={fetchSightings}
       />
       <NavigationButton currentScreen={currentScreen} onChangeScreen={setCurrentScreen} />
     </View>
