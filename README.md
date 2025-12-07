@@ -2,7 +2,7 @@
 
 Birdify es una aplicación creada para registrar, visualizar y compartir avistamientos de aves de forma intuitiva. Construida con React Native (Expo), integra cámara, geolocalización y un diccionario dinámico de especies mediante iNaturalist API, ofreciendo una experiencia útil y accesible para cualquier observador de aves.
 
-📌 Enlaces Importantes
+**📌 Enlaces Importantes**
 
 🔗 GitHub:
 https://github.com/Ivancf04/Birdify
@@ -16,7 +16,7 @@ https://www.canva.com/design/DAG6ZN5EfCI/qY943OWgkJ19h-BXiMBmDw/edit
 📱 APK:
 https://drive.google.com/drive/folders/1YJMPzdqYgsbCh9AZnyGIHjveNcoE5kHW?usp=drive_link
 
-🕊️ Funcionalidades
+**🕊️ Funcionalidades**
 
 - Lista de avistamientos
 
@@ -24,13 +24,13 @@ https://drive.google.com/drive/folders/1YJMPzdqYgsbCh9AZnyGIHjveNcoE5kHW?usp=dri
 
 - Diccionario de aves (iNaturalist API)
 
-Frontend Utilizado
+**Frontend Utilizado**
 
 - React Native (Expo)
 
 - React Navigation
 
-🛠️ Backend Utilizado
+**🛠️ Backend Utilizado**
 
 - Supabase
 
