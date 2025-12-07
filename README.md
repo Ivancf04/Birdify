@@ -1,4 +1,4 @@
-** Birdify – App móvil para el avistamiento de aves **
+**Birdify – App móvil para el avistamiento de aves**
 
 Birdify es una aplicación creada para registrar, visualizar y compartir avistamientos de aves de forma intuitiva. Construida con React Native (Expo), integra cámara, geolocalización y un diccionario dinámico de especies mediante iNaturalist API, ofreciendo una experiencia útil y accesible para cualquier observador de aves.
 
