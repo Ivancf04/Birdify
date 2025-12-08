@@ -7,22 +7,24 @@ import { supabase } from "./lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import AuthScreen from "./screens/AuthScreen";
 
-// 1. Nuevas interfaces para manejar datos relacionales
+// Datos del perfl de usuario 
 export interface UserProfile {
   username: string;
   full_name?: string;
   avatar_url?: string;
 }
 
+// Datos de un comentario, uncluido el autor
 export interface Comment {
   id: string;
   text: string;
   timestamp: string;
   user_id?: string;
-  author?: string;     // Nombre textual (fallback)
-  profiles?: UserProfile; // Datos reales del autor (join)
+  author?: string;  
+  profiles?: UserProfile; 
 }
 
+// Datos de un avistamiento con autor y comentarios
 export interface BirdSighting {
   id: string;
   species: string;
@@ -33,22 +35,25 @@ export interface BirdSighting {
   notes: string;
   image?: string;
   image_path?: string;
-  user_id?: string;       // ID del dueño
-  profiles?: UserProfile; // Datos del dueño (join)
+  user_id?: string;       
+  profiles?: UserProfile; 
   comments?: Comment[];
 }
 
+// Pantallas disponibles en la App
 export type Screen = "home" | "add" | "dictionary";
 
+// Dirección del proyecto en Supabase
 const PROJECT_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 
+// Componente principal de la App
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen>("home");
   const [sightings, setSightings] = useState<BirdSighting[]>([]);
   const [userName, setUserName] = useState("");
 
-  // ─── GESTIÓN DE SESIÓN ────────────────────────────────────────────────
+  // Gestion de sesion
   useEffect(() => {
     // Verificar sesión inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -66,7 +71,7 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Función para obtener el perfil desde la tabla 'profiles'
+  // Obtiene el perfil desde la tabla 'profiles'
   const fetchProfile = async (userId: string) => {
     try {
       const { data } = await supabase
@@ -78,12 +83,12 @@ export default function App() {
     } catch (e) { console.log(e); }
   };
 
-  // ─── CARGAR DATOS (CON RELACIONES) ────────────────────────────────────
+  // Carga todos los avistamientos con joins (autor + comentarios)
   const fetchSightings = async () => {
     if (!session) return;
 
     try {
-      // Hacemos un JOIN triple para traer datos del autor y de los comentaristas
+      // Hacem un join triple para traer datos del autor y de los comentaristas
       const { data: sightingsData, error } = await supabase
         .from("sightings")
         .select(`
@@ -109,14 +114,14 @@ export default function App() {
         image: s.image_path ? `${PROJECT_URL}/storage/v1/object/public/photos/${s.image_path}` : undefined,
         image_path: s.image_path,
         user_id: s.user_id,
-        profiles: s.profiles, // Info del creador (@sasa)
+        profiles: s.profiles, // Info del creador 
         comments: s.comments.map((c: any) => ({
           id: c.id.toString(),
           text: c.text,
           timestamp: c.created_at,
           user_id: c.user_id,
-          profiles: c.profiles, // Info del comentarista (@ivan)
-          // Lógica para mostrar nombre: Si hay perfil usa username, si no usa el author guardado
+          profiles: c.profiles, // Info del comentarista 
+          // Muestra el nombre: Si hay perfil usa username, si no usa el autor guardado
           author: c.profiles?.username || c.author || "Anónimo"
         })),
       }));
@@ -131,16 +136,16 @@ export default function App() {
     if (session) fetchSightings();
   }, [session]);
 
+  // Se ejecuta al agregar un avistamiento y recarga la lista
   const handleAddSighting = () => {
     fetchSightings();
     setCurrentScreen("home");
   };
 
-  // ─── BORRAR AVISTAMIENTO (Solo si eres el dueño) ──────────────────────
+  // Elimina un avistamiento solo si pertenece al usuario 
   const handleDeleteSighting = (id: string) => {
     const sighting = sightings.find(s => s.id === id);
 
-    // Validación visual extra: ¿Es mío?
     if (sighting?.user_id && sighting.user_id !== session?.user.id) {
       Alert.alert("Acceso denegado", "Solo puedes borrar tus propios reportes.");
       return;
@@ -156,7 +161,7 @@ export default function App() {
             if (sighting?.image_path) {
               await supabase.storage.from("photos").remove([sighting.image_path]);
             }
-            // La política RLS en la DB también validará que sea tuyo
+            // La política RLS en la DB también validará que sea del usuario
             const { error } = await supabase.from("sightings").delete().eq("id", id);
 
             if (error) throw error;
@@ -169,7 +174,7 @@ export default function App() {
     ]);
   };
 
-  // ─── COMENTAR (Vinculado al usuario) ──────────────────────────────────
+  // Agrega un comentario vinculado al usuario actual
   const handleAddComment = async (
     sightingId: string,
     comment: Omit<Comment, "id" | "timestamp">
@@ -191,7 +196,7 @@ export default function App() {
     }
   };
 
-  // ─── BORRAR COMENTARIO (Nueva función) ────────────────────────────────
+  // Elimina un comentario 
   const handleDeleteComment = async (commentId: string) => {
     try {
       const { error } = await supabase.from("comments").delete().eq("id", commentId);
@@ -202,6 +207,7 @@ export default function App() {
     }
   };
 
+  // Cierra la sesion del usuario 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
