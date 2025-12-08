@@ -13,6 +13,8 @@ export const NavigationButton: React.FC<NavigationButtonProps> = ({
   currentScreen,
   onChangeScreen,
 }) => {
+  // Tabs disponibles en la navegación inferior
+  // Cada tab tiene una clave, un texto visible y un ícono
   const tabs: { key: Screen; label: string; icon: React.ComponentProps<typeof Feather>["name"] }[] =
     [
       { key: "home", label: "Home", icon: "home" },
@@ -21,6 +23,7 @@ export const NavigationButton: React.FC<NavigationButtonProps> = ({
     ];
 
   return (
+    // Contenedor principal de la barra de navegación
     <View style={styles.container}>
       {tabs.map((tab) => {
         const isActive = currentScreen === tab.key;
@@ -30,11 +33,13 @@ export const NavigationButton: React.FC<NavigationButtonProps> = ({
             onPress={() => onChangeScreen(tab.key)}
             style={styles.tab}
           >
+            {/* Ícono del tab */}
             <Feather
               name={tab.icon}
               size={22}
               color={isActive ? "#059669" : "#4b5563"}
             />
+            {/* Texto del botón */}
             <Text style={[styles.label, isActive && styles.labelActive]}>
               {tab.label}
             </Text>

@@ -6,6 +6,7 @@ import type { BirdSighting, Comment } from "../App";
 import { ImageWithFallback } from "../components/ImageWithFallback";
 import CommentSection from "../components/CommentSection";
 
+// Propiedades que recibe la tarjeta de avistamiento
 interface SightingCardProps {
   sighting: BirdSighting;
   onDelete: (id: string) => void;
@@ -14,11 +15,13 @@ interface SightingCardProps {
   currentUserId: string;
 }
 
+// Formatea la fecha del avistamiento
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 
+// Componente que muestra un avistamiento completo
 export default function SightingCard({
   sighting,
   onDelete,
@@ -26,8 +29,8 @@ export default function SightingCard({
   onDeleteComment,
   currentUserId,
 }: SightingCardProps) {
-  const commentCount = sighting.comments?.length ?? 0;
-  const [showComments, setShowComments] = useState(false);
+  const commentCount = sighting.comments?.length ?? 0; // Numero de comentarios
+  const [showComments, setShowComments] = useState(false); // Mostrar u ocultar comentarios
 
   // Verificar si soy el dueño para mostrar el botón de borrar
   const isMySighting = sighting.user_id === currentUserId;
@@ -35,6 +38,7 @@ export default function SightingCard({
 
   return (
     <View style={styles.card}>
+      {/* Imagen del avistamiento con fallback */}
       {sighting.image && (
         <ImageWithFallback
           src={sighting.image}
@@ -52,9 +56,10 @@ export default function SightingCard({
             </Text>
             <View style={styles.locationRow}>
               <Feather name="user" size={14} color="#059669" />
-              {/* Mostramos quién lo subió */}
+              {/* Usuario que lo subió */}
               <Text style={[styles.locationText, { fontWeight: "bold", marginBottom: 2 }]}>@{authorName}</Text>
             </View>
+            {/* Ubicación */}
             <View style={styles.locationRow}>
               <Feather name="map-pin" size={14} color="#059669" />
               <Text style={styles.locationText}>{sighting.location}</Text>
@@ -75,7 +80,7 @@ export default function SightingCard({
           )}
         </View>
 
-        {/* Meta info */}
+        {/* Fecha y hora del avistamiento */}
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
             <Feather name="calendar" size={14} color="#047857" />
@@ -87,6 +92,7 @@ export default function SightingCard({
           </View>
         </View>
 
+        {/* Cantidad de aves */}
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
             <Feather name="hash" size={14} color="#047857" />
@@ -96,12 +102,14 @@ export default function SightingCard({
           </View>
         </View>
 
+        {/* Notas opcionales */}
         {sighting.notes ? (
           <View style={styles.notesSection}>
             <Text style={styles.notesText}>{sighting.notes}</Text>
           </View>
         ) : null}
 
+        {/* Botón para mostrar u ocultar comentarios */}
         <View style={styles.footerRow}>
           <Pressable
             onPress={() => setShowComments((prev) => !prev)}
@@ -116,6 +124,7 @@ export default function SightingCard({
           </Pressable>
         </View>
 
+        {/* Sección de comentarios */}
         {showComments && (
           <View style={styles.commentsWrapper}>
             <CommentSection
@@ -124,7 +133,7 @@ export default function SightingCard({
               onAddComment={onAddComment}
               onDeleteComment={onDeleteComment}
               currentUserId={currentUserId}
-              sightingOwnerId={sighting.user_id} // Pasamos el ID del dueño para saber si ocultar input
+              sightingOwnerId={sighting.user_id} 
             />
           </View>
         )}

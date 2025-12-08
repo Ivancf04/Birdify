@@ -2,9 +2,10 @@ import React from "react";
 import { View, Text, ViewProps } from "react-native";
 import { styles } from "./styles//Card.styles";
 
-// 👇 Genérico para aceptar "style" como RN y mantener API compatible
+// Props base para las tarjetas, permite estilos y children
 type CardBaseProps = ViewProps & { children?: React.ReactNode };
 
+// Contenedor principal de tarjeta
 export function Card({ style, children, ...rest }: CardBaseProps) {
   return (
     <View style={[styles.card, style]} {...rest}>
@@ -13,6 +14,7 @@ export function Card({ style, children, ...rest }: CardBaseProps) {
   );
 }
 
+// Encabezado
 export function CardHeader({ style, children, ...rest }: CardBaseProps) {
   return (
     <View style={[styles.cardHeader, style]} {...rest}>
@@ -21,6 +23,7 @@ export function CardHeader({ style, children, ...rest }: CardBaseProps) {
   );
 }
 
+// Titulo
 export function CardTitle({
   style,
   children,
@@ -33,6 +36,7 @@ export function CardTitle({
   );
 }
 
+// Descripcion
 export function CardDescription({
   style,
   children,
@@ -45,6 +49,7 @@ export function CardDescription({
   );
 }
 
+// Acciones y botones
 export function CardAction({ style, children, ...rest }: CardBaseProps) {
   return (
     <View style={[styles.cardAction, style]} {...rest}>
@@ -53,6 +58,7 @@ export function CardAction({ style, children, ...rest }: CardBaseProps) {
   );
 }
 
+// Contenido de la tarjeta
 export function CardContent({ style, children, ...rest }: CardBaseProps) {
   return (
     <View style={[styles.cardContent, style]} {...rest}>
@@ -61,6 +67,7 @@ export function CardContent({ style, children, ...rest }: CardBaseProps) {
   );
 }
 
+// Pie de la tarjeta
 export function CardFooter({ style, children, ...rest }: CardBaseProps) {
   return (
     <View style={[styles.cardFooter, style]} {...rest}>

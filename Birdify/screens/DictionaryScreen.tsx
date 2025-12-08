@@ -1,4 +1,6 @@
+// Importa dependencias necesarias para UI  y estado
 import React, { useEffect, useState } from "react";
+// Importa componentes de React Native
 import {
   View,
   Text,
@@ -10,7 +12,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { styles } from "./styles/DictionaryScreen.styles";
-
+// Interface para tipar las aves recibidas del API
 interface ApiBird {
   id: number;
   commonName: string;
@@ -19,21 +21,26 @@ interface ApiBird {
 
   wikipediaUrl?: string;
   observationsCount?: number;
-  establishmentMeans?: string; // native / introduced
-  establishmentPlace?: string; // Mexico
-  rank?: string; // species
-  iconicTaxonName?: string; // Aves
+  establishmentMeans?: string; 
+  establishmentPlace?: string; 
+  rank?: string; 
+  iconicTaxonName?: string; 
 }
 
+// URL de la API de iNaturalist
 const API_URL =
   "https://api.inaturalist.org/v1/taxa?q=bird&taxon_id=3&place_id=6793&rank=species&per_page=40";
 
 export default function DictionaryScreen() {
+    // Lista de aves obtenidas del API
   const [birds, setBirds] = useState<ApiBird[]>([]);
+  // Estados de carga y error
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // ID de la tarjeta expandida
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
+  // Función que obtiene las aves desde iNaturalist
   const fetchBirds = async () => {
     try {
       setLoading(true);
@@ -46,7 +53,8 @@ export default function DictionaryScreen() {
 
       const json = await res.json();
       const results = json.results ?? [];
-
+      
+      // Convierte los datos de la API a nuestro formato ApiBird
       const parsed: ApiBird[] = results.map((t: any) => ({
         id: t.id,
         commonName: t.preferred_common_name || t.name || "Unknown",
@@ -63,6 +71,7 @@ export default function DictionaryScreen() {
         iconicTaxonName: t.iconic_taxon_name,
       }));
 
+    // Guarda los datos en el estado
       setBirds(parsed);
     } catch (err: any) {
       console.log("Error fetching birds from iNaturalist", err);
@@ -72,14 +81,17 @@ export default function DictionaryScreen() {
     }
   };
 
+  // Ejecuta la carga inicial de datos
   useEffect(() => {
     fetchBirds();
   }, []);
 
+  // Alterna expandir/colapsar una tarjeta
   const toggleExpanded = (id: number) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
+  // Componente para mostrar un bloque de detalle
   const renderSection = (title: string, value?: string) => {
     if (!value) return null;
     return (
@@ -90,6 +102,7 @@ export default function DictionaryScreen() {
     );
   };
 
+  // Renderiza una tarjeta de un ave
   const renderItem = ({ item }: { item: ApiBird }) => {
     const isExpanded = expandedId === item.id;
 
@@ -191,6 +204,7 @@ export default function DictionaryScreen() {
     );
   };
 
+  // Vista de carga
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -202,6 +216,7 @@ export default function DictionaryScreen() {
     );
   }
 
+  // Vista de error
   if (error) {
     return (
       <View style={styles.loadingContainer}>
@@ -213,6 +228,7 @@ export default function DictionaryScreen() {
     );
   }
 
+  // Vista normal con la lista de aves
   return (
     <View style={styles.screen}>
       <FlatList

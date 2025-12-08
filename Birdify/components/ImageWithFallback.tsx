@@ -13,8 +13,10 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   alt,
   style,
 }) => {
+  // Estado para detectar si falló la carga
   const [didError, setDidError] = useState(false);
 
+  // Si hubo error, muestra un contenedor alternativo
   if (didError) {
     return (
       <View style={[styles.fallbackContainer, style]}>
@@ -22,7 +24,6 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
           {alt || "Error loading image"}
         </Text>
 
-        {/* small fallback SVG-like box */}
         <View style={styles.fallbackIcon}>
           <Text style={styles.iconText}>📷</Text>
         </View>
