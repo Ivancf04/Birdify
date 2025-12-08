@@ -1,4 +1,6 @@
+// Importa React y estado local
 import React, { useState } from "react";
+// Importa componentes UI de React Native
 import {
   View,
   Text,
@@ -7,9 +9,12 @@ import {
   Platform,
 } from "react-native";
 import { styles } from "./styles/HomeScreen.styles";
+// Tipos de datos para avistamientos y comentarios
 import type { BirdSighting, Comment } from "../App";
+// Tarjeta individual de avistamiento
 import SightingCard from "./SightingCard";
 
+// Propiedades que recibe HomeScreen
 interface HomeScreenProps {
   sightings: BirdSighting[];
   onDelete: (id: string) => void;
@@ -30,9 +35,10 @@ export default function HomeScreen({
   currentUserId,
   onRefreshSightings,
 }: HomeScreenProps) {
-  //Estado y función para refrescar la lista
+  // Controla el estado del "pull to refresh"
   const [refreshing, setRefreshing] = useState(false);
 
+  // Ejecuta la función para recargar los avistamientos
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
@@ -43,6 +49,7 @@ export default function HomeScreen({
   };
 
   return (
+    // Ajusta la vista cuando aparece el teclado
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -50,6 +57,7 @@ export default function HomeScreen({
     >
       <View style={styles.screen}>
         <View style={styles.mainCard}>
+          {/* Encabezado de la pantalla */}
           <View style={styles.headerRow}>
             <Text style={styles.title}>Recent Sightings</Text>
             <View style={styles.badge}>
@@ -60,6 +68,7 @@ export default function HomeScreen({
             </View>
           </View>
 
+          {/* Mensaje si no hay avistamientos */}
           {sightings.length === 0 ? (
             <View style={styles.emptyCard}>
               <Text style={styles.emptyText}>
@@ -68,6 +77,7 @@ export default function HomeScreen({
               </Text>
             </View>
           ) : (
+            // Lista de avistamientos con soporte para refresh
             <FlatList
               data={sightings}
               keyExtractor={(item) => item.id}
