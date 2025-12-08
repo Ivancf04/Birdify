@@ -1,3 +1,4 @@
+// Pantalla de login
 import React, { useState } from "react";
 import {
   View,
@@ -12,10 +13,10 @@ import { Feather } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { TextInputField } from "../components/ui/TextInputField";
 import { PrimaryButton } from "../components/ui/PrimaryButton";
-import { styles } from "./styles/AuthScreen"; // Asegúrate de que este archivo de estilos exista
+import { styles } from "./styles/AuthScreen"; 
 
 export default function AuthScreen() {
-  // -- Estados para el formulario --
+  // Estados del formulario
   const [identifier, setIdentifier] = useState(""); // Para Login (puede ser Usuario o Email)
   
   const [email, setEmail] = useState("");           // Solo para Registro
@@ -24,10 +25,10 @@ export default function AuthScreen() {
   
   const [password, setPassword] = useState("");     // Para ambos
   
-  const [loading, setLoading] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false); // Indicador de carga
+  const [isLogin, setIsLogin] = useState(true); // Cambiar entre login y registro
 
-  // ─── 1. LÓGICA DE LOGIN INTELIGENTE ──────────────────────────────────────
+  // Login por correo o por nombre de usuario
   const signIn = async () => {
     setLoading(true);
     let loginEmail = identifier.trim();
@@ -66,7 +67,7 @@ export default function AuthScreen() {
     setLoading(false);
   };
 
-  // ─── 2. LÓGICA DE REGISTRO COMPLETO ──────────────────────────────────────
+  // Registro con creación automática del perfil
   const signUp = async () => {
     setLoading(true);
     
@@ -79,7 +80,6 @@ export default function AuthScreen() {
           username: username.trim(), 
           full_name: fullName.trim(),
           display_name: username.trim(), 
-          // IMPORTANTE: El trigger también debe estar configurado para guardar el email
         },
       },
     });
@@ -93,6 +93,7 @@ export default function AuthScreen() {
     setLoading(false);
   };
 
+  // Ejecutar login o registro segun modo
   const handleSubmit = () => {
     if (!password) return Alert.alert("Falta contraseña");
 
@@ -107,6 +108,7 @@ export default function AuthScreen() {
     }
   };
 
+  // Cambiar entre login y registro
   const toggleMode = () => {
     setIsLogin(!isLogin);
     // Limpiar campos para evitar confusión
@@ -117,6 +119,7 @@ export default function AuthScreen() {
     setFullName("");
   };
 
+  // Interfaz de usuario
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
