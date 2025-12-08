@@ -13,6 +13,7 @@ interface CommentSectionProps {
   sightingOwnerId?: string;
 }
 
+// Cálcula días transcurridos desde un timestamp
 const getRelativeDays = (timestamp: string) => {
   const date = new Date(timestamp);
   const diffMs = Date.now() - date.getTime();
@@ -31,9 +32,10 @@ export default function CommentSection({
 }: CommentSectionProps) {
   const [text, setText] = useState("");
   const inputRef = useRef<TextInput>(null);
-  // Estado para saber a quién estamos respondiendo (solo visual para el placeholder)
+  // Estado para saber a quién estamos respondiendo 
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
+  // Enviar comentario nuevo
   const handleSubmit = () => {
     if (!text.trim()) return;
     
@@ -46,6 +48,7 @@ export default function CommentSection({
     Keyboard.dismiss();
   };
 
+  // Eliminar comentario con confirmación
   const handleDelete = (commentId: string) => {
     Alert.alert("Borrar comentario", "¿Estás seguro?", [
       { text: "Cancelar", style: "cancel" },
@@ -53,6 +56,7 @@ export default function CommentSection({
     ]);
   };
 
+  // Responder a un comentario
   const handleReply = (username: string) => {
     setReplyingTo(username);
     // Pre-llenamos el input con la mención
@@ -80,6 +84,7 @@ export default function CommentSection({
 
   return (
     <View style={styles.container}>
+      {/* Resumen de cantidad */}
       <View style={styles.summaryRow}>
         <Feather name="message-circle" size={14} color="#059669" />
         <Text style={styles.summaryText}>
@@ -89,6 +94,7 @@ export default function CommentSection({
         </Text>
       </View>
 
+      {/* Lista de comentarios */}
       {comments.length > 0 && (
         <View style={styles.listWrapper}>
           <FlatList
@@ -143,6 +149,7 @@ export default function CommentSection({
         </View>
       )}
 
+      {/* Formulario para escribir comentario */}
       <View style={styles.form}>
         <View style={styles.commentRow}>
           <TextInput
