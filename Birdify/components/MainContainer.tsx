@@ -26,29 +26,30 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   sightings,
   onDelete,
   onAddComment,
-  // Destructure the new props
   onDeleteComment,
   currentUserId,
   onRefreshSightings,
 }) => {
   return (
+    // Contenedor principal donde se renderizan las pantallas
     <View style={styles.main}>
       {currentScreen === "home" && (
         <HomeScreen
           sightings={sightings}
           onDelete={onDelete}
           onAddComment={onAddComment}
-          // Pass the new props to HomeScreen
           onDeleteComment={onDeleteComment}
           currentUserId={currentUserId}
           onRefreshSightings={onRefreshSightings}
         />
       )}
 
+      {/* Si la pantalla es "add", se muestra el formulario para agregar avistamientos */}
       {currentScreen === "add" && (
         <AddReportScreen onSubmit={onAddSighting} />
       )}
 
+      {/* Si la pantalla es "dictionary", se muestra el diccionario */}
       {currentScreen === "dictionary" && <DictionaryScreen />}
     </View>
   );
