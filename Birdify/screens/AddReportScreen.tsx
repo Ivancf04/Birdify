@@ -23,25 +23,29 @@ import { styles } from "./styles/AddReportScreen.styles";
 import type { BirdSighting } from "../App";
 import { supabase } from "../lib/supabase";
 
+// Props del screen: envía el avistamiento al componente principal
 interface AddReportScreenProps {
   onSubmit: (sighting: Omit<BirdSighting, "id" | "comments">) => void;
 }
 
+// Componente para crear un nuevo reporte de ave
 export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
-  const [imageUri, setImageUri] = useState<string | undefined>(undefined);
+  const [imageUri, setImageUri] = useState<string | undefined>(undefined); // Guarda la foto tomada
+  // Campos del formulario
   const [species, setSpecies] = useState("");
   const [locationText, setLocationText] = useState("");
   const [count, setCount] = useState("1");
   const [notes, setNotes] = useState("");
+  // Indicadores de carga
   const [loading, setLoading] = useState(false);
-
   const [locationLoading, setLocationLoading] = useState(false);
+  //Permisos de camara y control de vista
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const cameraRef = useRef<any>(null);
   const CameraViewAny: any = CameraView;
 
-  // ─── LOCATION ────────────────────────────────────────────────────────
+  // Solicita permisos, obtiene ubicacion actual y convierte a texto
   useEffect(() => {
     const askLocation = async () => {
       if (!Device.isDevice) return;
@@ -73,7 +77,7 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
     askLocation();
   }, []);
 
-  // ─── CAMERA ──────────────────────────────────────────────────────────
+  // Abre la camara pidiendo permisos de ser necesario
   const handleOpenCamera = async () => {
     if (!cameraPermission || !cameraPermission.granted) {
       const { status } = await requestCameraPermission();
@@ -85,6 +89,7 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
     setIsCameraOpen(true);
   };
 
+  // Captura la foto y guarda el URI
   const handleTakePhoto = async () => {
     try {
       if (!cameraRef.current) return;
@@ -99,7 +104,7 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
     }
   };
 
-  // ─── SUBMIT CON USUARIO ──────────────────────────────────────────────
+  // Valida campos, sube foto y guarda el reporte con user_id
   const handleSubmit = async () => {
     if (!locationText.trim()) {
       Alert.alert("Falta ubicación", "Indica dónde viste el ave.");
@@ -138,11 +143,11 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
 
       if (uploadError) throw uploadError;
 
-      // 4. Guardar en Base de Datos (CON USER_ID)
+      // 4. Guardar en Base de Datos 
       const { error: insertError } = await supabase
         .from("sightings")
         .insert({
-          user_id: user.id, // <--- ESTO ES LO QUE FALTABA
+          user_id: user.id, 
           species: species.trim() || "Unknown",
           location: locationText.trim(),
           count: Number(count) || 1,
@@ -156,14 +161,14 @@ export default function AddReportScreen({ onSubmit }: AddReportScreenProps) {
 
       Alert.alert("¡Éxito!", "Reporte publicado correctamente 🦅");
       
-      // Limpiar formulario
+      // Limpia el formulario
       setSpecies("");
       setNotes("");
       setCount("1");
       setLocationText("");
       setImageUri(undefined);
       
-      // Avisar a la App principal que recargue
+      // Avisa a la App principal que recargue
       onSubmit({} as any); 
 
     } catch (error: any) {
