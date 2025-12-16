@@ -84,17 +84,4 @@ export const styles = StyleSheet.create({
     color: "#1f2937",
     fontWeight: "500",
   },
-  
-  // Botón volver 
-  backButton: {
-    marginTop: 30,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 99,
-    backgroundColor: "#e0f2f1",
-  },
-  backButtonText: {
-    color: "#047857",
-    fontWeight: "600",
-  },
 });
