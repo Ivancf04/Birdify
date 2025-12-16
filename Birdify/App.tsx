@@ -40,8 +40,8 @@ export interface BirdSighting {
   comments?: Comment[];
 }
 
-// Pantallas disponibles en la App
-export type Screen = "home" | "add" | "dictionary";
+// Pantallas disponibles en la App (Agregamos 'profile')
+export type Screen = "home" | "add" | "dictionary" | "profile";
 
 // Dirección del proyecto en Supabase
 const PROJECT_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -51,7 +51,9 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen>("home");
   const [sightings, setSightings] = useState<BirdSighting[]>([]);
-  const [userName, setUserName] = useState("");
+  
+  // Guardamos el objeto perfil completo en lugar de solo el nombre
+  const [userProfile, setUserProfile] = useState<UserProfile | undefined>(undefined);
 
   // Gestion de sesion
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) fetchProfile(session.user.id);
-      else setUserName("");
+      else setUserProfile(undefined);
     });
 
     return () => subscription.unsubscribe();
@@ -76,10 +78,10 @@ export default function App() {
     try {
       const { data } = await supabase
         .from('profiles')
-        .select('username, full_name')
+        .select('username, full_name, avatar_url')
         .eq('id', userId)
         .single();
-      if (data) setUserName(data.username || data.full_name || "Usuario");
+      if (data) setUserProfile(data);
     } catch (e) { console.log(e); }
   };
 
@@ -186,7 +188,7 @@ export default function App() {
         sighting_id: sightingId,
         user_id: session.user.id, // Guardamos TU ID real
         text: comment.text,
-        author: userName // Guardamos también el nombre como texto (backup)
+        author: userProfile?.username || "Usuario" // Guardamos también el nombre como texto (backup)
       });
 
       if (error) throw error;
@@ -212,12 +214,24 @@ export default function App() {
     await supabase.auth.signOut();
   };
 
+  // Navega al perfil
+  const handleProfilePress = () => {
+    setCurrentScreen("profile");
+  };
+
   if (!session) return <AuthScreen />;
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <Header userName={userName} onSignOut={handleSignOut} />
+      
+      {/* Header Actualizado: Sin nombre texto, con botón de perfil */}
+      <Header 
+        onProfilePress={handleProfilePress} 
+        onSignOut={handleSignOut} 
+        currentScreen={currentScreen}
+      />
+      
       <MainContainer
         currentScreen={currentScreen}
         onAddSighting={handleAddSighting}
@@ -227,7 +241,13 @@ export default function App() {
         onDeleteComment={handleDeleteComment}
         currentUserId={session.user.id}
         onRefreshSightings={fetchSightings}
+        // Pasamos datos para el perfil
+        userProfile={userProfile}
+        userEmail={session.user.email}
+        onBackToHome={() => setCurrentScreen("home")}
       />
+      
+      {/* Ocultamos la barra inferior si estamos en el perfil, opcionalmente */}
       <NavigationButton currentScreen={currentScreen} onChangeScreen={setCurrentScreen} />
     </View>
   );

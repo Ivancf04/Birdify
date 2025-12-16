@@ -6,7 +6,7 @@ import { styles } from "./styles/Header.styles";
 interface HeaderProps {
   onProfilePress?: () => void;
   onSignOut?: () => void;
-  currentScreen?: string; // Opcional, para saber si mostrar flecha de atrás
+  currentScreen?: string; 
 }
 
 export const Header = ({ onProfilePress, onSignOut, currentScreen }: HeaderProps) => {

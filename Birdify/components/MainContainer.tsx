@@ -1,10 +1,11 @@
 import React from "react";
-import { View } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { styles } from "./styles/MainContainer.styles";
 import HomeScreen from "../screens/HomeScreen";
 import AddReportScreen from "../screens/AddReportScreen";
 import DictionaryScreen from "../screens/DictionaryScreen";
-import type { BirdSighting, Comment, Screen } from "../App";
+import ProfileScreen from "../screens/ProfileScreen";
+import type { BirdSighting, Comment, Screen, UserProfile } from "../App";
 
 interface MainContainerProps {
   currentScreen: Screen;
@@ -18,6 +19,10 @@ interface MainContainerProps {
   onDeleteComment: (commentId: string) => void;
   currentUserId: string;
   onRefreshSightings: () => Promise<void> | void;
+  // Nuevas props para perfil
+  userProfile?: UserProfile;
+  userEmail?: string;
+  onBackToHome: () => void;
 }
 
 export const MainContainer: React.FC<MainContainerProps> = ({
@@ -29,11 +34,13 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   onDeleteComment,
   currentUserId,
   onRefreshSightings,
+  userProfile,
+  userEmail,
+  onBackToHome,
 }) => {
   return (
-    // Contenedor principal donde se renderizan las pantallas
     <View style={styles.main}>
-      {currentScreen === "home" && (
+      <View style={{ flex: 1, display: currentScreen === "home" ? "flex" : "none" }}>
         <HomeScreen
           sightings={sightings}
           onDelete={onDelete}
@@ -42,15 +49,24 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           currentUserId={currentUserId}
           onRefreshSightings={onRefreshSightings}
         />
-      )}
+      </View>
 
-      {/* Si la pantalla es "add", se muestra el formulario para agregar avistamientos */}
-      {currentScreen === "add" && (
+      <View style={{ flex: 1, display: currentScreen === "add" ? "flex" : "none" }}>
         <AddReportScreen onSubmit={onAddSighting} />
-      )}
+      </View>
 
-      {/* Si la pantalla es "dictionary", se muestra el diccionario */}
-      {currentScreen === "dictionary" && <DictionaryScreen />}
+      <View style={{ flex: 1, display: currentScreen === "dictionary" ? "flex" : "none" }}>
+        <DictionaryScreen />
+      </View>
+
+      {/* Nueva pantalla de perfil */}
+      <View style={{ flex: 1, display: currentScreen === "profile" ? "flex" : "none" }}>
+        <ProfileScreen 
+          userProfile={userProfile} 
+          email={userEmail} 
+          onBack={onBackToHome} 
+        />
+      </View>
     </View>
   );
 };

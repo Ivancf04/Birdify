@@ -19,11 +19,11 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    position: "relative", // Necesario para centrar el título
-    height: 44, // Altura fija para facilitar alineación
+    position: "relative",
+    height: 44, 
   },
   
-  // Contenedor del Título (Centrado Absoluto)
+  // Contenedor del Título 
   titleContainer: {
     position: "absolute",
     left: 0,
@@ -32,7 +32,7 @@ export const styles = StyleSheet.create({
     bottom: 0,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: -1, // Detrás de los botones para no bloquear toques si se solapan
+    zIndex: -1,
   },
   title: {
     color: "#ffffff",
@@ -41,7 +41,7 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // Botones Laterales (Perfil y Salir)
+  // Botones Laterales
   iconButton: {
     width: 40,
     height: 40,
