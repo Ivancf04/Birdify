@@ -6,28 +6,48 @@ export const styles = StyleSheet.create({
   header: {
     backgroundColor: "#009966",
     paddingTop: STATUSBAR_HEIGHT + 10,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 10,
   },
   contentRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    position: "relative", // Necesario para centrar el título
+    height: 44, // Altura fija para facilitar alineación
+  },
+  
+  // Contenedor del Título (Centrado Absoluto)
+  titleContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: -1, // Detrás de los botones para no bloquear toques si se solapan
   },
   title: {
     color: "#ffffff",
-    fontSize: 22,
-    fontWeight: "700",
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
-  subtitle: {
-    color: "#d1fae5",
-    fontSize: 13,
-    marginTop: 2,
-    fontWeight: "500",
-  },
-  signOutButton: {
-    padding: 8,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 12,
+
+  // Botones Laterales (Perfil y Salir)
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

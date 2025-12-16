@@ -4,26 +4,31 @@ import { Feather } from "@expo/vector-icons";
 import { styles } from "./styles/Header.styles";
 
 interface HeaderProps {
-  userName?: string;
+  onProfilePress?: () => void;
   onSignOut?: () => void;
+  currentScreen?: string; // Opcional, para saber si mostrar flecha de atrás
 }
 
-export const Header = ({ userName, onSignOut }: HeaderProps) => {
+export const Header = ({ onProfilePress, onSignOut, currentScreen }: HeaderProps) => {
   return (
     <View style={styles.header}>
       <View style={styles.contentRow}>
-        <View>
+        
+        
+        <Pressable onPress={onProfilePress} style={styles.iconButton}>
+          <Feather name="user" size={20} color="#ffffff" />
+        </Pressable>
+
+        
+        <View style={styles.titleContainer}>
           <Text style={styles.title}>Birdify</Text>
-          {userName ? (
-            <Text style={styles.subtitle}>Hola, {userName}</Text>
-          ) : null}
         </View>
 
-        {onSignOut && (
-          <Pressable onPress={onSignOut} style={styles.signOutButton}>
-            <Feather name="log-out" size={20} color="#ffffff" />
-          </Pressable>
-        )}
+        
+        <Pressable onPress={onSignOut} style={styles.iconButton}>
+          <Feather name="log-out" size={20} color="#ffffff" />
+        </Pressable>
+
       </View>
     </View>
   );
