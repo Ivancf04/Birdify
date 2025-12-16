@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import { View, Text, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { styles } from "./styles/SightingCard.style";
@@ -21,18 +21,16 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 
-// Componente que muestra un avistamiento completo
-export default function SightingCard({
+const SightingCard = memo(({
   sighting,
   onDelete,
   onAddComment,
   onDeleteComment,
   currentUserId,
-}: SightingCardProps) {
-  const commentCount = sighting.comments?.length ?? 0; // Numero de comentarios
-  const [showComments, setShowComments] = useState(false); // Mostrar u ocultar comentarios
+}: SightingCardProps) => {
+  const commentCount = sighting.comments?.length ?? 0; 
+  const [showComments, setShowComments] = useState(false); 
 
-  // Verificar si soy el dueño para mostrar el botón de borrar
   const isMySighting = sighting.user_id === currentUserId;
   const authorName = sighting.profiles?.username || "Anónimo";
 
@@ -66,7 +64,7 @@ export default function SightingCard({
             </View>
           </View>
 
-          {/* SOLO mostramos el botón de borrar si es MI avistamiento */}
+          {/* mostrar boton borrar si es MI avist */}
           {isMySighting && (
             <Pressable
               onPress={() => onDelete(sighting.id)}
@@ -124,7 +122,7 @@ export default function SightingCard({
           </Pressable>
         </View>
 
-        {/* Sección de comentarios */}
+        {/* Seccion de comentarios */}
         {showComments && (
           <View style={styles.commentsWrapper}>
             <CommentSection
@@ -140,4 +138,6 @@ export default function SightingCard({
       </View>
     </View>
   );
-}
+});
+
+export default SightingCard;
