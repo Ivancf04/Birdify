@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, StatusBar, Alert } from "react-native";
+import { View, StyleSheet, StatusBar, ActivityIndicator, Image, Alert} from "react-native";
 import { Header } from "./components/Header";
 import { MainContainer } from "./components/MainContainer";
 import { NavigationButton } from "./components/NavigationButton";
 import { supabase } from "./lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import AuthScreen from "./screens/AuthScreen";
+import { FadeView } from "./components/ui/FadeView";
 
-// Datos del perfl de usuario 
+// Datos de usuario 
 export interface UserProfile {
   username: string;
   full_name?: string;
   avatar_url?: string;
 }
 
-// Datos de comentario
+// Datos comentario y el autor
 export interface Comment {
   id: string;
   text: string;
@@ -24,7 +25,7 @@ export interface Comment {
   profiles?: UserProfile; 
 }
 
-// Datos de un avistamiento 
+// Datos de avistamiento con autor y comentarios
 export interface BirdSighting {
   id: string;
   species: string;
@@ -40,40 +41,47 @@ export interface BirdSighting {
   comments?: Comment[];
 }
 
-// Pantallas disponibles en la App
+// Pantallas disponibles
 export type Screen = "home" | "add" | "dictionary" | "profile";
 
-// Dirección del proyecto en Supabase
+// Dirección del proyecto
 const PROJECT_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 
-// Componente principal
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
+  const [isReady, setIsReady] = useState(false); // Nuevo estado de carga inicial
+  
   const [currentScreen, setCurrentScreen] = useState<Screen>("home");
   const [sightings, setSightings] = useState<BirdSighting[]>([]);
-  
-  // save objeto perfil 
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>(undefined);
 
-  // Gestion de sesion
+  // Gestion de sesion y carga inicial
   useEffect(() => {
-    // Verificar 
+    // 1. Verificar sesion 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session?.user) fetchProfile(session.user.id);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      }
+      // Pequeño delay artificial para que la animación de entrada se aprecie mejor 
+      // y dar tiempo a que los datos iniciales carguen si es necesario.
+      setTimeout(() => setIsReady(true), 1000);
     });
 
-    // Escuchar cambios 
+    // 2. Escuchar cambios 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) fetchProfile(session.user.id);
-      else setUserProfile(undefined);
+      else {
+        setUserProfile(undefined);
+        setSightings([]); // Limpiar datos al salir
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Obtiene perfil -> tabla 'profiles'
+  // Obtiene perfil desde tabla 'profiles'
   const fetchProfile = async (userId: string) => {
     try {
       const { data } = await supabase
@@ -85,12 +93,11 @@ export default function App() {
     } catch (e) { console.log(e); }
   };
 
-  // Carga todos los avistamientos con joins
+  // Carga todos los avistamientos
   const fetchSightings = async () => {
     if (!session) return;
 
     try {
-      // Hacem un join triple para traer datos del autor y de los comentaristas
       const { data: sightingsData, error } = await supabase
         .from("sightings")
         .select(`
@@ -113,17 +120,16 @@ export default function App() {
         time: s.sighting_time,
         count: s.count,
         notes: s.notes,
-        image: s.image_path ? `${PROJECT_URL}/storage/v1/object/public/photos/${s.image_path}` : undefined,
+        image: s.image_path ? `${PROJECT_URL}/storage/v1/object/public/photos/${s.image_path}` : undefined, 
         image_path: s.image_path,
         user_id: s.user_id,
-        profiles: s.profiles, // Info del creador 
+        profiles: s.profiles, 
         comments: s.comments.map((c: any) => ({
           id: c.id.toString(),
           text: c.text,
           timestamp: c.created_at,
           user_id: c.user_id,
-          profiles: c.profiles, // Info del comentarista 
-          // Muestra el nombre: Si hay perfil usa username, si no usa el autor guardado
+          profiles: c.profiles,
           author: c.profiles?.username || c.author || "Anónimo"
         })),
       }));
@@ -138,21 +144,17 @@ export default function App() {
     if (session) fetchSightings();
   }, [session]);
 
-  // Se ejecuta al agregar un avistamiento y recarga la lista
   const handleAddSighting = () => {
     fetchSightings();
     setCurrentScreen("home");
   };
 
-  // Elimina un avistamiento solo si pertenece al usuario 
   const handleDeleteSighting = (id: string) => {
     const sighting = sightings.find(s => s.id === id);
-
     if (sighting?.user_id && sighting.user_id !== session?.user.id) {
       Alert.alert("Acceso denegado", "Solo puedes borrar tus propios reportes.");
       return;
     }
-
     Alert.alert("Confirmar", "¿Borrar avistamiento?", [
       { text: "Cancelar", style: "cancel" },
       {
@@ -163,34 +165,29 @@ export default function App() {
             if (sighting?.image_path) {
               await supabase.storage.from("photos").remove([sighting.image_path]);
             }
-            // política RLS en DB también valida que sea del usuario
             const { error } = await supabase.from("sightings").delete().eq("id", id);
-
             if (error) throw error;
             fetchSightings();
           } catch (error: any) {
-            Alert.alert("Error", "No se pudo borrar (¿Quizás no es tuyo?)");
+            Alert.alert("Error", "No se pudo borrar");
           }
         },
       },
     ]);
   };
 
-  // Agrega comentario vinculado al usuario actual
   const handleAddComment = async (
     sightingId: string,
     comment: Omit<Comment, "id" | "timestamp">
   ) => {
     try {
       if (!session?.user) return;
-
       const { error } = await supabase.from("comments").insert({
         sighting_id: sightingId,
-        user_id: session.user.id, // Guardamos ID
+        user_id: session.user.id, 
         text: comment.text,
-        author: userProfile?.username || "Usuario" // Guardamos el nombre como texto (backup)
+        author: userProfile?.username || "Usuario" 
       });
-
       if (error) throw error;
       fetchSightings();
     } catch (error: any) {
@@ -198,7 +195,6 @@ export default function App() {
     }
   };
 
-  // Elimina un comentario 
   const handleDeleteComment = async (commentId: string) => {
     try {
       const { error } = await supabase.from("comments").delete().eq("id", commentId);
@@ -209,50 +205,74 @@ export default function App() {
     }
   };
 
-  // Cierra la sesion del usuario 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
 
-  // Navega al perfil
   const handleProfilePress = () => {
     setCurrentScreen("profile");
   };
 
-  if (!session) return <AuthScreen />;
+  // --- PANTALLA DE CARGA (SPLASH) ---
+  if (!isReady) {
+    return (
+      <View style={styles.splashContainer}>
+        <StatusBar barStyle="light-content" />
+        <Image 
+          source={require('./assets/adaptive-icon.png')} 
+          style={{ width: 120, height: 120, marginBottom: 20 }}
+          resizeMode="contain"
+        />
+        <ActivityIndicator size="large" color="#059669" />
+      </View>
+    );
+  }
 
+  // --- App ---
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      
-      {/* Header Actualizado: Sin nombre texto, con botón de perfil */}
-      <Header 
-        onProfilePress={handleProfilePress} 
-        onSignOut={handleSignOut} 
-        currentScreen={currentScreen}
-      />
-      
-      <MainContainer
-        currentScreen={currentScreen}
-        onAddSighting={handleAddSighting}
-        sightings={sightings}
-        onDelete={handleDeleteSighting}
-        onAddComment={handleAddComment}
-        onDeleteComment={handleDeleteComment}
-        currentUserId={session.user.id}
-        onRefreshSightings={fetchSightings}
-        // Pasamos datos para el perfil
-        userProfile={userProfile}
-        userEmail={session.user.email}
-        onBackToHome={() => setCurrentScreen("home")}
-      />
-      
-      {/* Ocultamos la barra inferior si estamos en el perfil, opcionalmente */}
-      <NavigationButton currentScreen={currentScreen} onChangeScreen={setCurrentScreen} />
+
+      {/* Pantalla de Login */}
+      <FadeView visible={!session} style={StyleSheet.absoluteFill}>
+        <AuthScreen />
+      </FadeView>
+
+      {/* Pantalla Principal*/}
+      <FadeView visible={!!session} style={StyleSheet.absoluteFill}>
+        <View style={{ flex: 1 }}>
+          <Header 
+            onProfilePress={handleProfilePress} 
+            onSignOut={handleSignOut} 
+            currentScreen={currentScreen}
+          />
+          <MainContainer
+            currentScreen={currentScreen}
+            onAddSighting={handleAddSighting}
+            sightings={sightings}
+            onDelete={handleDeleteSighting}
+            onAddComment={handleAddComment}
+            onDeleteComment={handleDeleteComment}
+            currentUserId={session?.user?.id || ""}
+            onRefreshSightings={fetchSightings}
+            userProfile={userProfile}
+            userEmail={session?.user?.email}
+            onBackToHome={() => setCurrentScreen("home")}
+          />
+          
+          <NavigationButton currentScreen={currentScreen} onChangeScreen={setCurrentScreen} />
+        </View>
+      </FadeView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#020617" },
+  container: { flex: 1, backgroundColor: "#e0f2f1" },
+  splashContainer: {
+    flex: 1,
+    backgroundColor: "#e0f2f1", // Fondo
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

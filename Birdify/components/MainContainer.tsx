@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from "react";
-import { View, Animated } from "react-native";
+import React from "react";
+import { View } from "react-native";
 import { styles } from "./styles/MainContainer.styles";
 import HomeScreen from "../screens/HomeScreen";
 import AddReportScreen from "../screens/AddReportScreen";
 import DictionaryScreen from "../screens/DictionaryScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
+import { FadeView } from "./ui/FadeView"; // Importamos el componente reutilizable
 import type { BirdSighting, Comment, Screen, UserProfile } from "../App";
 
 interface MainContainerProps {
@@ -24,34 +25,6 @@ interface MainContainerProps {
   onBackToHome: () => void;
 }
 
-
-const FadeScreen = ({ visible, children }: { visible: boolean; children: React.ReactNode }) => {
-  const fadeAnim = useRef(new Animated.Value(visible ? 1 : 0)).current;
-
-  useEffect(() => {
-    if (visible) {
-      fadeAnim.setValue(0); 
-      Animated.timing(fadeAnim, {
-        toValue: 1, 
-        duration: 370, // duracion en ms
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [visible]);
-
-  return (
-    <Animated.View
-      style={{
-        flex: 1,
-        display: visible ? "flex" : "none",
-        opacity: fadeAnim,
-      }}
-    >
-      {children}
-    </Animated.View>
-  );
-};
-
 export const MainContainer: React.FC<MainContainerProps> = ({
   currentScreen,
   onAddSighting,
@@ -67,7 +40,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
 }) => {
   return (
     <View style={styles.main}>
-      <FadeScreen visible={currentScreen === "home"}>
+      <FadeView visible={currentScreen === "home"}>
         <HomeScreen
           sightings={sightings}
           onDelete={onDelete}
@@ -76,23 +49,23 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           currentUserId={currentUserId}
           onRefreshSightings={onRefreshSightings}
         />
-      </FadeScreen>
+      </FadeView>
 
-      <FadeScreen visible={currentScreen === "add"}>
+      <FadeView visible={currentScreen === "add"}>
         <AddReportScreen onSubmit={onAddSighting} />
-      </FadeScreen>
+      </FadeView>
 
-      <FadeScreen visible={currentScreen === "dictionary"}>
+      <FadeView visible={currentScreen === "dictionary"}>
         <DictionaryScreen />
-      </FadeScreen>
+      </FadeView>
 
-      <FadeScreen visible={currentScreen === "profile"}>
+      <FadeView visible={currentScreen === "profile"}>
         <ProfileScreen 
           userProfile={userProfile} 
           email={userEmail} 
           onBack={onBackToHome} 
         />
-      </FadeScreen>
+      </FadeView>
     </View>
   );
 };
