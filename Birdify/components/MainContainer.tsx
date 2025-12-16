@@ -1,10 +1,10 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { View, Animated } from "react-native";
 import { styles } from "./styles/MainContainer.styles";
 import HomeScreen from "../screens/HomeScreen";
 import AddReportScreen from "../screens/AddReportScreen";
 import DictionaryScreen from "../screens/DictionaryScreen";
-import ProfileScreen from "../screens/ProfileScreen";
+import { ProfileScreen } from "../screens/ProfileScreen";
 import type { BirdSighting, Comment, Screen, UserProfile } from "../App";
 
 interface MainContainerProps {
@@ -19,11 +19,38 @@ interface MainContainerProps {
   onDeleteComment: (commentId: string) => void;
   currentUserId: string;
   onRefreshSightings: () => Promise<void> | void;
-  // Nuevas props para perfil
   userProfile?: UserProfile;
   userEmail?: string;
   onBackToHome: () => void;
 }
+
+
+const FadeScreen = ({ visible, children }: { visible: boolean; children: React.ReactNode }) => {
+  const fadeAnim = useRef(new Animated.Value(visible ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      fadeAnim.setValue(0); 
+      Animated.timing(fadeAnim, {
+        toValue: 1, 
+        duration: 370, // duracion en ms
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  return (
+    <Animated.View
+      style={{
+        flex: 1,
+        display: visible ? "flex" : "none",
+        opacity: fadeAnim,
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+};
 
 export const MainContainer: React.FC<MainContainerProps> = ({
   currentScreen,
@@ -40,7 +67,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
 }) => {
   return (
     <View style={styles.main}>
-      <View style={{ flex: 1, display: currentScreen === "home" ? "flex" : "none" }}>
+      <FadeScreen visible={currentScreen === "home"}>
         <HomeScreen
           sightings={sightings}
           onDelete={onDelete}
@@ -49,24 +76,23 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           currentUserId={currentUserId}
           onRefreshSightings={onRefreshSightings}
         />
-      </View>
+      </FadeScreen>
 
-      <View style={{ flex: 1, display: currentScreen === "add" ? "flex" : "none" }}>
+      <FadeScreen visible={currentScreen === "add"}>
         <AddReportScreen onSubmit={onAddSighting} />
-      </View>
+      </FadeScreen>
 
-      <View style={{ flex: 1, display: currentScreen === "dictionary" ? "flex" : "none" }}>
+      <FadeScreen visible={currentScreen === "dictionary"}>
         <DictionaryScreen />
-      </View>
+      </FadeScreen>
 
-      {/* Nueva pantalla de perfil */}
-      <View style={{ flex: 1, display: currentScreen === "profile" ? "flex" : "none" }}>
+      <FadeScreen visible={currentScreen === "profile"}>
         <ProfileScreen 
           userProfile={userProfile} 
           email={userEmail} 
           onBack={onBackToHome} 
         />
-      </View>
+      </FadeScreen>
     </View>
   );
 };

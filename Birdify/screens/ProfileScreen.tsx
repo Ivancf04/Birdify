@@ -10,7 +10,7 @@ interface ProfileScreenProps {
   onBack: () => void;
 }
 
-export default function ProfileScreen({ userProfile, email, onBack }: ProfileScreenProps) {
+export const ProfileScreen = ({ userProfile, email, onBack }: ProfileScreenProps) => {
   // Obtener iniciales para el avatar
   const getInitials = () => {
     if (userProfile?.full_name) {
@@ -57,10 +57,6 @@ export default function ProfileScreen({ userProfile, email, onBack }: ProfileScr
           </View>
         </View>
       </View>
-
-      <Pressable onPress={onBack} style={styles.backButton}>
-        <Text style={styles.backButtonText}>Volver al Inicio</Text>
-      </Pressable>
     </View>
   );
-}
+};

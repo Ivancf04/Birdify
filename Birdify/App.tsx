@@ -14,7 +14,7 @@ export interface UserProfile {
   avatar_url?: string;
 }
 
-// Datos de un comentario, uncluido el autor
+// Datos de comentario
 export interface Comment {
   id: string;
   text: string;
@@ -24,7 +24,7 @@ export interface Comment {
   profiles?: UserProfile; 
 }
 
-// Datos de un avistamiento con autor y comentarios
+// Datos de un avistamiento 
 export interface BirdSighting {
   id: string;
   species: string;
@@ -40,30 +40,30 @@ export interface BirdSighting {
   comments?: Comment[];
 }
 
-// Pantallas disponibles en la App (Agregamos 'profile')
+// Pantallas disponibles en la App
 export type Screen = "home" | "add" | "dictionary" | "profile";
 
 // Dirección del proyecto en Supabase
 const PROJECT_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 
-// Componente principal de la App
+// Componente principal
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen>("home");
   const [sightings, setSightings] = useState<BirdSighting[]>([]);
   
-  // Guardamos el objeto perfil completo en lugar de solo el nombre
+  // save objeto perfil 
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>(undefined);
 
   // Gestion de sesion
   useEffect(() => {
-    // Verificar sesión inicial
+    // Verificar 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) fetchProfile(session.user.id);
     });
 
-    // Escuchar cambios (login, logout)
+    // Escuchar cambios 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) fetchProfile(session.user.id);
@@ -73,7 +73,7 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Obtiene el perfil desde la tabla 'profiles'
+  // Obtiene perfil -> tabla 'profiles'
   const fetchProfile = async (userId: string) => {
     try {
       const { data } = await supabase
@@ -85,7 +85,7 @@ export default function App() {
     } catch (e) { console.log(e); }
   };
 
-  // Carga todos los avistamientos con joins (autor + comentarios)
+  // Carga todos los avistamientos con joins
   const fetchSightings = async () => {
     if (!session) return;
 
@@ -163,7 +163,7 @@ export default function App() {
             if (sighting?.image_path) {
               await supabase.storage.from("photos").remove([sighting.image_path]);
             }
-            // La política RLS en la DB también validará que sea del usuario
+            // política RLS en DB también valida que sea del usuario
             const { error } = await supabase.from("sightings").delete().eq("id", id);
 
             if (error) throw error;
@@ -176,7 +176,7 @@ export default function App() {
     ]);
   };
 
-  // Agrega un comentario vinculado al usuario actual
+  // Agrega comentario vinculado al usuario actual
   const handleAddComment = async (
     sightingId: string,
     comment: Omit<Comment, "id" | "timestamp">
@@ -186,9 +186,9 @@ export default function App() {
 
       const { error } = await supabase.from("comments").insert({
         sighting_id: sightingId,
-        user_id: session.user.id, // Guardamos TU ID real
+        user_id: session.user.id, // Guardamos ID
         text: comment.text,
-        author: userProfile?.username || "Usuario" // Guardamos también el nombre como texto (backup)
+        author: userProfile?.username || "Usuario" // Guardamos el nombre como texto (backup)
       });
 
       if (error) throw error;
