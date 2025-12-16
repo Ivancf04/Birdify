@@ -12,7 +12,7 @@ export const FadeView: React.FC<FadeViewProps> = ({
   visible, 
   children, 
   style, 
-  duration = 800 
+  duration = 520 
 }) => {
   const fadeAnim = useRef(new Animated.Value(visible ? 1 : 0)).current;
 
